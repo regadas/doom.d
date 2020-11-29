@@ -4,3 +4,5 @@
 
 (setq-default TeX-engine 'xetex
               pdf-latex-command "xelatex")
+
+(add-hook 'org-mode-hook (lambda () (electric-indent-local-mode -1)))
