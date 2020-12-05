@@ -149,6 +149,7 @@
        (ocaml +lsp)             ; an objective camel
        (org
         +pretty
+        +roam
         +dragndrop
         +present)              ; organize your plain life in plain text
        ;;php               ; perl's insecure younger brother
