@@ -25,7 +25,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-solarized-light
+(setq doom-theme 'doom-vibrant
       doom-font (font-spec :family "Iosevka" :size 16))
 
 ;; If you use `org' and don't want your org files in the default location below,
@@ -53,5 +53,41 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+(add-hook 'org-mode-hook (lambda () (electric-indent-local-mode -1)))
+
 (setq
- projectile-project-search-path '("~/projects/"))
+ projectile-project-search-path '("~/projects/" "~/projects/spotify"))
+
+(put 'projectile-grep 'disabled nil)
+
+(auto-save-visited-mode +1)
+
+(setq-default TeX-engine 'xetex
+              pdf-latex-command "xelatex")
+
+
+;; dhall-mode highlight the syntax and run dhall format on save
+(use-package! dhall-mode
+  :ensure t
+  :config
+  (setq
+    ;; uncomment the next line to disable automatic format
+    ;; dhall-format-at-save nil
+
+    ;; comment the next line to use unicode syntax
+    dhall-format-arguments (\` ("--ascii"))
+
+    ;; header-line is obsoleted by lsp-mode
+    dhall-use-header-line nil))
+
+;; lsp-mode provides the lsp client and it configure flymake to explain errors
+(use-package! lsp-mode
+  :ensure t
+  :init (setq lsp-keymap-prefix "C-c l")
+  :hook ((dhall-mode . lsp))
+  :commands lsp)
+
+;; lsp-ui shows type annotations on hover
+;; (use-package lsp-ui
+;;   :ensure t
+;;   :hook ((lsp-mode-hook . lsp-ui-mode)))
