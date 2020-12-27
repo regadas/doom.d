@@ -91,3 +91,5 @@
 ;; (use-package lsp-ui
 ;;   :ensure t
 ;;   :hook ((lsp-mode-hook . lsp-ui-mode)))
+
+(setq treemacs-collapse-dirs 10)
