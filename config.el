@@ -53,7 +53,10 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+
 (add-hook 'org-mode-hook (lambda () (electric-indent-local-mode -1)))
+
+(setq treemacs-git-mode 'deferred)
 
 (setq
  projectile-project-search-path '("~/projects/" "~/projects/spotify"))
