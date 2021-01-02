@@ -54,20 +54,17 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
+(auto-save-visited-mode +1)
 (add-hook 'org-mode-hook (lambda () (electric-indent-local-mode -1)))
-
-(setq treemacs-git-mode 'deferred)
-
-(setq
- projectile-project-search-path '("~/projects/" "~/projects/spotify"))
 
 (put 'projectile-grep 'disabled nil)
 
-(auto-save-visited-mode +1)
+(setq treemacs-git-mode 'deferred
+      treemacs-collapse-dirs 10
+      projectile-project-search-path '("~/projects/" "~/projects/spotify"))
 
 (setq-default TeX-engine 'xetex
               pdf-latex-command "xelatex")
-
 
 ;; dhall-mode highlight the syntax and run dhall format on save
 (use-package! dhall-mode
@@ -95,4 +92,4 @@
 ;;   :ensure t
 ;;   :hook ((lsp-mode-hook . lsp-ui-mode)))
 
-(setq treemacs-collapse-dirs 10)
+
