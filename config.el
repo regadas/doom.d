@@ -92,4 +92,9 @@
 ;;   :ensure t
 ;;   :hook ((lsp-mode-hook . lsp-ui-mode)))
 
+(use-package! kubernetes
+  :commands (kubernetes-overview))
 
+;; If you want to pull in the Evil compatibility package.
+(use-package! kubernetes-evil
+  :after kubernetes)
