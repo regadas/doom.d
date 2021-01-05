@@ -57,18 +57,15 @@
 (auto-save-visited-mode +1)
 (add-hook 'org-mode-hook (lambda () (electric-indent-local-mode -1)))
 
-(put 'projectile-grep 'disabled nil)
-
 (setq treemacs-git-mode 'deferred
       treemacs-collapse-dirs 10
-      projectile-project-search-path '("~/projects/" "~/projects/spotify"))
+      projectile-project-search-path '("~/projects/" "~/projects/spotify" "~/projects/experiments"))
 
 (setq-default TeX-engine 'xetex
               pdf-latex-command "xelatex")
 
 ;; dhall-mode highlight the syntax and run dhall format on save
 (use-package! dhall-mode
-  :ensure t
   :config
   (setq
     ;; uncomment the next line to disable automatic format
@@ -82,7 +79,6 @@
 
 ;; lsp-mode provides the lsp client and it configure flymake to explain errors
 (use-package! lsp-mode
-  :ensure t
   :init (setq lsp-keymap-prefix "C-c l")
   :hook ((dhall-mode . lsp))
   :commands lsp)
