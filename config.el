@@ -83,11 +83,6 @@
   :hook ((dhall-mode . lsp))
   :commands lsp)
 
-;; lsp-ui shows type annotations on hover
-;; (use-package lsp-ui
-;;   :ensure t
-;;   :hook ((lsp-mode-hook . lsp-ui-mode)))
-
 (use-package! kubernetes
   :commands (kubernetes-overview))
 
