@@ -78,14 +78,14 @@
 (use-package! dhall-mode
   :config
   (setq
-    ;; uncomment the next line to disable automatic format
-    ;; dhall-format-at-save nil
+   ;; uncomment the next line to disable automatic format
+   ;; dhall-format-at-save nil
 
-    ;; comment the next line to use unicode syntax
-    dhall-format-arguments (\` ("--ascii"))
+   ;; comment the next line to use unicode syntax
+   dhall-format-arguments (\` ("--ascii"))
 
-    ;; header-line is obsoleted by lsp-mode
-    dhall-use-header-line nil))
+   ;; header-line is obsoleted by lsp-mode
+   dhall-use-header-line nil))
 
 ;; lsp-mode provides the lsp client and it configure flymake to explain errors
 (use-package! lsp-mode
