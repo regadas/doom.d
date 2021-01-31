@@ -63,9 +63,13 @@
 (auto-save-visited-mode +1)
 (add-hook 'org-mode-hook (lambda () (electric-indent-local-mode -1)))
 
-(setq treemacs-git-mode 'deferred
-      treemacs-collapse-dirs 10
-      projectile-project-search-path '("~/projects/" "~/projects/spotify" "~/projects/experiments"))
+(after! treemacs
+  (setq treemacs-git-mode 'deferred
+        treemacs-collapse-dirs 20))
+
+(after! projectile
+  (setq projectile-project-search-path '("~/projects/" "~/projects/spotify" "~/projects/experiments")
+        projectile-project-root-files-bottom-up '(".projectile" ".git")))
 
 (setq-default TeX-engine 'xetex
               pdf-latex-command "xelatex")
