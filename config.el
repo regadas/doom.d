@@ -40,7 +40,7 @@
 (setq display-line-numbers-type nil
       scroll-conservatively 10)
 
-(setq company-idle-delay 0.2)
+(setq company-idle-delay 0.1)
 
 
 ;; Here are some additional functions/macros that could help you configure Doom:
