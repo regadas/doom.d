@@ -25,8 +25,16 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-dracula
-      doom-font (font-spec :family "Iosevka" :size 16))
+(setq doom-theme 'doom-solarized-light
+      doom-font (font-spec :family "Iosevka" :size 16)
+      doom-themes-enable-bold t
+      doom-themes-enable-italic t)
+
+(setq-default line-spacing 3)
+
+(custom-set-faces!
+  '(font-lock-comment-face :slant italic)
+  '(font-lock-keyword-face :slant italic))
 
 ;; Prevents some cases of Emacs flickering
 ;; (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
