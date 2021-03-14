@@ -93,7 +93,14 @@
    dhall-format-arguments (\` ("--ascii"))
 
    ;; header-line is obsoleted by lsp-mode
-   dhall-use-header-line nil))
+   dhall-use-header-line nil)
+  (set-repl-handler! 'dhall-mode #'dhall-repl-show)
+  (map! :after dhall-mode
+        :map dhall-mode-map
+        :localleader
+        "l" #'dhall-lint
+        "f" #'dhall-freeze
+        "t" #'dhall-buffer-type-show))
 
 ;; lsp-mode provides the lsp client and it configure flymake to explain errors
 (use-package! lsp-mode
