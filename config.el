@@ -69,9 +69,6 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-(auto-save-visited-mode +1)
-(add-hook 'org-mode-hook (lambda () (electric-indent-local-mode -1)))
-
 (after! treemacs
   (setq treemacs-git-mode 'deferred
         treemacs-collapse-dirs 20))
