@@ -51,6 +51,7 @@
 (setq company-idle-delay 0.2
       company-minimum-prefix-length 0)
 
+(auto-save-visited-mode +1)
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
