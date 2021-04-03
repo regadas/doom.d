@@ -13,6 +13,8 @@
 (package! protobuf-mode)
 (package! kubernetes)
 (package! command-log-mode)
+(package! ob-mermaid)
+(package! ob-http)
 
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:
