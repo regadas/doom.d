@@ -113,3 +113,17 @@
 ;; If you want to pull in the Evil compatibility package.
 (use-package! kubernetes-evil
   :after kubernetes)
+
+(defun lsp-go-install-save-hooks ()
+  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+
+(after! go-mode
+  (if (featurep! +lsp)
+      (add-hook 'go-mode-hook #'lsp-deferred)
+      (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)))
+
+(after! lsp-mode
+  (lsp-register-custom-settings
+   '(("gopls.completeUnimported" t t)
+     ("gopls.staticcheck" t t))))
