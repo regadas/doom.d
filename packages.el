@@ -12,7 +12,6 @@
 (package! k8s-mode)
 (package! protobuf-mode)
 (package! kubernetes)
-(package! command-log-mode)
 (package! ob-mermaid)
 (package! ob-http)
 
