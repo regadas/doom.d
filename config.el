@@ -73,8 +73,7 @@
 
 (after! treemacs
   (setq treemacs-git-mode 'deferred
-        treemacs-collapse-dirs 20)
-  (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action))
+        treemacs-collapse-dirs 20))
 
 (after! projectile
   (setq projectile-project-search-path '("~/projects/" "~/projects/spotify" "~/projects/experiments")
