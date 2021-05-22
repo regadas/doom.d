@@ -123,7 +123,7 @@
 (after! go-mode
   (if (featurep! +lsp)
       (add-hook 'go-mode-hook #'lsp-deferred)
-      (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)))
+    (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)))
 
 (after! lsp-mode
   (lsp-register-custom-settings
