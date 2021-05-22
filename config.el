@@ -135,3 +135,7 @@
   (require 'tree-sitter-langs)
   (global-tree-sitter-mode)
   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+
+(after! browse-at-remote
+  (add-to-list 'browse-at-remote-remote-type-domains
+               '("ghe.spotify.net" . "github")))
