@@ -25,7 +25,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-gruvbox
+(setq doom-theme 'modus-operandi
       doom-font (font-spec :family "Iosevka Term" :size 16)
       doom-themes-enable-bold t
       doom-themes-enable-italic t)
@@ -111,7 +111,6 @@
 (use-package! kubernetes
   :commands (kubernetes-overview))
 
-;; If you want to pull in the Evil compatibility package.
 (use-package! kubernetes-evil
   :after kubernetes)
 
