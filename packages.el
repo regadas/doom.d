@@ -14,8 +14,8 @@
 (package! kubernetes)
 (package! ob-mermaid)
 (package! ob-http)
-(package! tree-sitter)
-(package! tree-sitter-langs)
+;; (package! tree-sitter)
+;; (package! tree-sitter-langs)
 (package! modus-themes)
 
 ;; To install a package directly from a remote git repo, you must specify a
