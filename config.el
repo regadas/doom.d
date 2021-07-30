@@ -135,12 +135,16 @@
    '(("gopls.completeUnimported" t t)
      ("gopls.staticcheck" t t))))
 
-(use-package! tree-sitter
-  :config
-  (require 'tree-sitter-langs)
-  (global-tree-sitter-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+;; (use-package! tree-sitter
+;;   :config
+;;   (require 'tree-sitter-langs)
+;;   (global-tree-sitter-mode)
+;;   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
 (after! browse-at-remote
   (add-to-list 'browse-at-remote-remote-type-domains
                '("ghe.spotify.net" . "github")))
+
+(after! lsp-mode
+  (setq +lsp-company-backends
+        '(:separate company-capf company-yasnippet)))
