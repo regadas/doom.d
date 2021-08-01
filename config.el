@@ -148,3 +148,9 @@
 (after! lsp-mode
   (setq +lsp-company-backends
         '(:separate company-capf company-yasnippet)))
+
+(defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
+  :around #'lsp--get-indent-width
+  (if (provided-mode-derived-p mode 'web-mode)
+      'tab-width
+    (funcall orig-fn mode)))
