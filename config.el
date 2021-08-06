@@ -50,7 +50,7 @@
 (setq display-line-numbers-type nil
       scroll-conservatively 101)
 
-(setq company-idle-delay 0.2)
+(setq company-idle-delay 0.1)
 ;; company-minimum-prefix-length 0)
 
 (auto-save-visited-mode +1)
