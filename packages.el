@@ -8,7 +8,6 @@
 
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
 ;(package! some-package)
-(package! dhall-mode)
 (package! k8s-mode)
 (package! protobuf-mode)
 (package! kubernetes)
