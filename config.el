@@ -9,7 +9,7 @@
 (setq user-full-name "Filipe Regadas"
       user-mail-address "filiperegadas@gmail.com")
 
-(setq gc-cons-threshold 200000000)
+(setq gc-cons-threshold most-positive-fixnum)
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
