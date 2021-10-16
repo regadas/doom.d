@@ -34,10 +34,6 @@
 
 (setq-default line-spacing 3)
 
-(custom-set-faces!
-  '(font-lock-comment-face :slant italic)
-  '(font-lock-keyword-face :slant italic))
-
 ;; Prevents some cases of Emacs flickering
 ;; (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
