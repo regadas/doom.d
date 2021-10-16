@@ -83,6 +83,10 @@
 (setq-default TeX-engine 'xetex
               pdf-latex-command "xelatex")
 
+;; Disable invasive lsp-mode features
+(setq lsp-ui-sideline-enable nil   ; not anymore useful than flycheck
+      lsp-ui-doc-enable nil)        ; slow and redundant with K
+
 ;; lsp-mode provides the lsp client and it configure flymake to explain errors
 (use-package! lsp-mode
   :init (setq lsp-keymap-prefix "C-c l")
