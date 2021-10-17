@@ -28,9 +28,7 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'modus-operandi
-      doom-font (font-spec :family "Iosevka Term" :size 16)
-      doom-themes-enable-bold t
-      doom-themes-enable-italic t)
+      doom-font (font-spec :family "Iosevka Term" :size 16))
 
 (setq-default line-spacing 3)
 
