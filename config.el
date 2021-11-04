@@ -120,8 +120,9 @@
                '("^ghe\\.spotify\\.net$" . "github")))
 
 (after! lsp-mode
-  (setq +lsp-company-backends
-        '(:separate company-capf company-yasnippet)))
+  (setq ;; lsp-rust-analyzer-server-display-inlay-hints t
+        ;; lsp-metals-show-inferred-type t
+        +lsp-company-backends '(:separate company-capf company-yasnippet)))
 
 (defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
   :around #'lsp--get-indent-width
