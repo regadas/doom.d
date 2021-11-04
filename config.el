@@ -44,11 +44,7 @@
 (setq display-line-numbers-type nil
       scroll-conservatively 101)
 
-(setq company-idle-delay 0.1)
-;; company-minimum-prefix-length 0)
-
 (auto-save-visited-mode +1)
-(add-hook 'org-mode-hook (lambda () (electric-indent-local-mode -1)))
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
