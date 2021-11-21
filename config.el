@@ -122,7 +122,7 @@
 (after! lsp-mode
   (setq ;; lsp-rust-analyzer-server-display-inlay-hints t
         ;; lsp-metals-show-inferred-type t
-        lsp-lens-auto-enable t
+        lsp-lens-enable t
         +lsp-company-backends '(:separate company-capf company-yasnippet)))
 
 (defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
