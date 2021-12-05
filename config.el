@@ -130,3 +130,6 @@
   (if (provided-mode-derived-p mode 'web-mode)
       'tab-width
     (funcall orig-fn mode)))
+
+(with-eval-after-load 'lsp-rust
+  (require 'dap-cpptools))
