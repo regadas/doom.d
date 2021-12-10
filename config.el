@@ -41,10 +41,15 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type nil
+(setq display-line-numbers-type 'relative
       scroll-conservatively 101)
 
 (auto-save-visited-mode +1)
+
+;;; :editor evil
+;; Focus new window after splitting
+(setq evil-split-window-below t
+      evil-vsplit-window-right t)
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
@@ -78,7 +83,7 @@
               pdf-latex-command "xelatex")
 
 ;; Disable invasive lsp-mode features
-(setq lsp-ui-sideline-enable nil   ; not anymore useful than flycheck
+(setq lsp-ui-sideline-enable t   ; not anymore useful than flycheck
       lsp-ui-doc-enable nil)        ; slow and redundant with K
 
 ;; lsp-mode provides the lsp client and it configure flymake to explain errors
@@ -109,11 +114,11 @@
    '(("gopls.completeUnimported" t t)
      ("gopls.staticcheck" t t))))
 
-;; (use-package! tree-sitter
-;;   :config
-;;   (require 'tree-sitter-langs)
-;;   (global-tree-sitter-mode)
-;;   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+(use-package! tree-sitter
+  :config
+  (require 'tree-sitter-langs)
+  (global-tree-sitter-mode)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
 (after! browse-at-remote
   (add-to-list 'browse-at-remote-remote-type-regexps
@@ -121,9 +126,9 @@
 
 (after! lsp-mode
   (setq ;; lsp-rust-analyzer-server-display-inlay-hints t
-        ;; lsp-metals-show-inferred-type t
-        lsp-lens-enable t
-        +lsp-company-backends '(:separate company-capf company-yasnippet)))
+   ;; lsp-metals-show-inferred-type t
+   lsp-lens-enable t
+   +lsp-company-backends '(:separate company-capf company-yasnippet)))
 
 (defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
   :around #'lsp--get-indent-width
