@@ -8,14 +8,6 @@
 
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
 ;(package! some-package)
-(package! k8s-mode)
-(package! protobuf-mode)
-(package! kubernetes)
-(package! ob-mermaid)
-(package! ob-http)
-(package! tree-sitter)
-(package! tree-sitter-langs)
-(package! modus-themes)
 
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:
@@ -56,6 +48,20 @@
 ;(unpin! pinned-package another-pinned-package)
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
+
+(package! k8s-mode)
+(package! protobuf-mode)
+(package! kubernetes)
+(package! ob-mermaid)
+(package! ob-http)
+(package! tree-sitter)
+(package! tree-sitter-langs)
+(package! modus-themes)
+
+(package! org-cv
+  :recipe (:host gitlab
+           :repo "Titan-C/org-cv"))
+
 (package! gitconfig-mode
     :recipe (:host github :repo "magit/git-modes"
              :files ("gitconfig-mode.el")))

@@ -138,3 +138,9 @@
 
 (with-eval-after-load 'lsp-rust
   (require 'dap-cpptools))
+
+(use-package! ox-awesomecv
+  :after org)
+
+(after! org
+  (setq org-latex-compiler "xelatex"))
