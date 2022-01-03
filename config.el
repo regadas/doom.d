@@ -72,9 +72,6 @@
   (setq treemacs-git-mode 'deferred
         treemacs-collapse-dirs 20))
 
-(after! treemacs-lsp
-  (lsp-treemacs-sync-mode 1))
-
 (after! projectile
   (setq projectile-project-search-path '("~/projects/" "~/projects/spotify" "~/projects/experiments")
         projectile-project-root-files-bottom-up '(".projectile" ".git")))
