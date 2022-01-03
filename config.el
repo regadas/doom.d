@@ -100,11 +100,6 @@
       (add-hook 'go-mode-hook #'lsp-deferred)
     (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)))
 
-(after! lsp-mode
-  (lsp-register-custom-settings
-   '(("gopls.completeUnimported" t t)
-     ("gopls.staticcheck" t t))))
-
 (use-package! tree-sitter
   :config
   (require 'tree-sitter-langs)
@@ -116,6 +111,9 @@
                '("^ghe\\.spotify\\.net$" . "github")))
 
 (after! lsp-mode
+  (lsp-register-custom-settings
+   '(("gopls.completeUnimported" t t)
+     ("gopls.staticcheck" t t)))
   (setq ;; lsp-rust-analyzer-server-display-inlay-hints t
    ;; lsp-metals-show-inferred-type t
    lsp-lens-enable t
