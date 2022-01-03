@@ -83,12 +83,6 @@
 (setq lsp-ui-sideline-enable t   ; not anymore useful than flycheck
       lsp-ui-doc-enable nil)        ; slow and redundant with K
 
-;; lsp-mode provides the lsp client and it configure flymake to explain errors
-(use-package! lsp-mode
-  :init (setq lsp-keymap-prefix "C-c l")
-  :hook ((dhall-mode . lsp))
-  :commands lsp)
-
 (use-package! kubernetes
   :init (progn
           (setq kubernetes-overview-custom-views-alist '((overview . (context statefulsets deployments services)))))
