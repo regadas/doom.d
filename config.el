@@ -28,7 +28,7 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'modus-operandi
-      doom-font (font-spec :family "Iosevka Term SS07" :size 16 :weight 'Medium))
+      doom-font (font-spec :family "Iosevka Term SS07" :size 15 :weight 'Medium))
 
 (setq-default line-spacing 3)
 
@@ -100,12 +100,6 @@
       (add-hook 'go-mode-hook #'lsp-deferred)
     (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)))
 
-(use-package! tree-sitter
-  :config
-  (require 'tree-sitter-langs)
-  (global-tree-sitter-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-
 (after! browse-at-remote
   (add-to-list 'browse-at-remote-remote-type-regexps
                '("^ghe\\.spotify\\.net$" . "github")))
@@ -117,6 +111,7 @@
   (setq ;; lsp-rust-analyzer-server-display-inlay-hints t
    ;; lsp-metals-show-inferred-type t
    lsp-lens-enable t
+   lsp-bash-highlight-parsing-errors t
    +lsp-company-backends '(:separate company-capf company-yasnippet)))
 
 (defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
@@ -133,3 +128,5 @@
 
 (after! org
   (setq org-latex-compiler "xelatex"))
+
+(setq lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/1.7.0/jdt-language-server-1.7.0-202112161541.tar.gz")
