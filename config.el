@@ -128,5 +128,3 @@
 
 (after! org
   (setq org-latex-compiler "xelatex"))
-
-(setq lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/1.7.0/jdt-language-server-1.7.0-202112161541.tar.gz")
