@@ -52,6 +52,7 @@
 (package! k8s-mode)
 (package! protobuf-mode)
 (package! kubernetes)
+(package! bazel)
 (package! ob-mermaid)
 (package! ob-http)
 (package! tree-sitter)

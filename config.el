@@ -129,3 +129,6 @@
 
 (after! org
   (setq org-latex-compiler "xelatex"))
+
+(after! bazel
+  (setq bazel-buildifier-before-save t))
