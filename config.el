@@ -107,6 +107,7 @@
 (after! lsp-mode
   (lsp-register-custom-settings
    '(("gopls.completeUnimported" t t)
+     ("gopls.codelenses" '(("test" . t)) t)
      ("gopls.staticcheck" t t)))
   (setq ;; lsp-rust-analyzer-server-display-inlay-hints t
    ;; lsp-metals-show-inferred-type t
