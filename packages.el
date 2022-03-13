@@ -49,15 +49,13 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
 
+(package! modus-themes)
 (package! k8s-mode)
 (package! protobuf-mode)
 (package! kubernetes)
 (package! bazel)
 (package! ob-mermaid)
 (package! ob-http)
-(package! tree-sitter)
-(package! tree-sitter-langs)
-(package! modus-themes)
 (package! dhall-mode)
 
 (package! org-cv
