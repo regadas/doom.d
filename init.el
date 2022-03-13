@@ -150,6 +150,7 @@
        nix               ; I hereby declare "nix geht mehr!"
        (ocaml +lsp)             ; an objective camel
        (org
+        +jupyter
         +pretty
         +roam2
         +dragndrop
