@@ -58,6 +58,7 @@
 (package! tree-sitter)
 (package! tree-sitter-langs)
 (package! modus-themes)
+(package! dhall-mode)
 
 (package! org-cv
   :recipe (:host gitlab
