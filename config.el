@@ -28,7 +28,7 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-tokyo-night
-      doom-font (font-spec :family "Iosevka Term SS07" :size 16 :weight 'Medium))
+      doom-font (font-spec :family "Iosevka Term" :size 16 :weight 'Medium))
 
 (setq-default line-spacing 3)
 
@@ -158,6 +158,11 @@
   :init (setq lsp-keymap-prefix "C-c l")
   :hook ((dhall-mode . lsp))
   :commands lsp)
+
+(map! (:when (featurep! :tools lookup)
+       :nv "gh"   #'+lookup/documentation
+       ))
+
 (use-package! vertico-posframe
    :hook (vertico-mode . vertico-posframe-mode)
    :config
