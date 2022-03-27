@@ -158,3 +158,7 @@
   :init (setq lsp-keymap-prefix "C-c l")
   :hook ((dhall-mode . lsp))
   :commands lsp)
+(use-package! vertico-posframe
+   :hook (vertico-mode . vertico-posframe-mode)
+   :config
+   (add-hook 'doom-after-reload-hook #'posframe-delete-all))
