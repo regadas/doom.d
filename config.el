@@ -28,7 +28,7 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-tokyo-night
-      doom-font (font-spec :family "Iosevka Term" :size 16 :weight 'Medium))
+      doom-font (font-spec :family "Iosevka" :size 16 :weight 'Medium))
 
 (setq-default line-spacing 3)
 
