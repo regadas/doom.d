@@ -163,7 +163,3 @@
        :nv "gh"   #'+lookup/documentation
        ))
 
-(use-package! vertico-posframe
-   :hook (vertico-mode . vertico-posframe-mode)
-   :config
-   (add-hook 'doom-after-reload-hook #'posframe-delete-all))
