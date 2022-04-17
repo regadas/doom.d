@@ -68,6 +68,10 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
+(map! (:when (featurep! :tools lookup)
+       :nv "gh"   #'+lookup/documentation
+       ))
+
 (after! treemacs
   (setq treemacs-git-mode 'deferred
         treemacs-collapse-dirs 20))
@@ -159,7 +163,4 @@
   :hook ((dhall-mode . lsp))
   :commands lsp)
 
-(map! (:when (featurep! :tools lookup)
-       :nv "gh"   #'+lookup/documentation
-       ))
-
+(setq! lsp-java-vmargs '("-XX:+UseG1GC" "-XX:+UseStringDeduplication" "-Xmx8G" "-Xms1G"))
