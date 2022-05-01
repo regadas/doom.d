@@ -62,6 +62,10 @@
   :recipe (:host gitlab
            :repo "Titan-C/org-cv"))
 
+(package! sql-trino
+  :recipe (:host github
+           :repo "regadas/sql-trino"))
+
 (package! gitconfig-mode
     :recipe (:host github :repo "magit/git-modes"
              :files ("gitconfig-mode.el")))
