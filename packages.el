@@ -57,6 +57,7 @@
 (package! ob-mermaid)
 (package! ob-http)
 (package! dhall-mode)
+(package! magit-delta)
 
 (package! org-cv
   :recipe (:host gitlab

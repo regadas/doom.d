@@ -164,3 +164,5 @@
   :commands lsp)
 
 (setq! lsp-java-vmargs '("-XX:+UseG1GC" "-XX:+UseStringDeduplication" "-Xmx8G" "-Xms1G"))
+(use-package! magit-delta
+  :hook (magit-mode . magit-delta-mode))
