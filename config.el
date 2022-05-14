@@ -141,3 +141,27 @@
 (setq! lsp-java-vmargs '("-XX:+UseG1GC" "-XX:+UseStringDeduplication" "-Xmx8G" "-Xms1G"))
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
+
+;; dhall-mode highlight the syntax and run dhall format on save
+(use-package! dhall-mode
+  :defer t
+  :init
+  (add-hook 'dhall-mode-local-vars-hook #'lsp! 'append)
+  :config
+  (setq dhall-format-at-save (featurep! :editor format +onsave))
+  (setq
+   ;; uncomment the next line to disable automatic format
+   ;; dhall-format-at-save nil
+
+   ;; comment the next line to use unicode syntax
+   dhall-format-arguments (\` ("--ascii"))
+
+   ;; header-line is obsoleted by lsp-mode
+   dhall-use-header-line nil)
+  (set-repl-handler! 'dhall-mode #'dhall-repl-show)
+  (map! :after dhall-mode
+        :map dhall-mode-map
+        :localleader
+        "l" #'dhall-lint
+        "f" #'dhall-freeze
+        "t" #'dhall-buffer-type-show))
