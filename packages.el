@@ -59,6 +59,7 @@
 (package! dhall-mode)
 (package! magit-delta)
 (package! sql-trino)
+(package! dimmer)
 
 (package! org-cv
   :recipe (:host gitlab

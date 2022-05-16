@@ -165,3 +165,7 @@
         "l" #'dhall-lint
         "f" #'dhall-freeze
         "t" #'dhall-buffer-type-show))
+
+(use-package! dimmer
+  :custom (dimmer-fraction 0.3)
+  :config (dimmer-mode))
