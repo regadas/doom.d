@@ -164,6 +164,7 @@
         :localleader
         "l" #'dhall-lint
         "f" #'dhall-freeze
+        "F" #'dhall-freeze-all
         "t" #'dhall-buffer-type-show))
 
 (use-package! dimmer
