@@ -148,8 +148,8 @@
   :init
   (add-hook 'dhall-mode-local-vars-hook #'lsp! 'append)
   :config
-  (setq dhall-format-at-save (featurep! :editor format +onsave))
   (setq
+   dhall-format-at-save (featurep! :editor format +onsave)
    ;; uncomment the next line to disable automatic format
    ;; dhall-format-at-save nil
 
@@ -158,13 +158,20 @@
 
    ;; header-line is obsoleted by lsp-mode
    dhall-use-header-line nil)
+
   (set-repl-handler! 'dhall-mode #'dhall-repl-show)
+
+  (reformatter-define dhall-freeze-all
+    :program dhall-command
+    :args '("freeze" "--all")
+    :group 'dhall
+    :lighter " DhFreezeAll")
   (map! :after dhall-mode
         :map dhall-mode-map
         :localleader
         "l" #'dhall-lint
-        "f" #'dhall-freeze
-        "F" #'dhall-freeze-all
+        "ff" #'dhall-freeze
+        "fa" #'dhall-freeze-all
         "t" #'dhall-buffer-type-show))
 
 (use-package! dimmer
@@ -188,6 +195,7 @@
          :map company-mode-map
          ("<tab>" . 'custom-tab)
          ("TAB" . 'custom-tab)))
+
 ;;tree-sitter
 (use-package! tree-sitter
   :when (bound-and-true-p module-file-suffix)
@@ -204,5 +212,5 @@
        (unless (string-match-p (concat "^Cannot find shared library\\|"
                                        "^No language registered\\|"
                                        "cannot open shared object file")
-                            (error-message-string e))
-            (signal (car e) (cadr e)))))))
+                               (error-message-string e))
+         (signal (car e) (cadr e)))))))

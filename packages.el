@@ -56,9 +56,10 @@
 (package! bazel)
 (package! ob-mermaid)
 (package! ob-http)
+(package! almost-mono-themes)
 (package! dhall-mode
   :recipe (:host github
-           :repo "regadas/dhall-mode"))
+           :repo "psibi/dhall-mode"))
 (package! magit-delta)
 (package! sql-trino)
 (package! dimmer)
