@@ -62,6 +62,8 @@
 (package! magit-delta)
 (package! sql-trino)
 (package! dimmer)
+(package! tree-sitter)
+(package! tree-sitter-langs)
 
 (package! org-cv
   :recipe (:host gitlab
