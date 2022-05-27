@@ -83,10 +83,6 @@
 (setq-default TeX-engine 'xetex
               pdf-latex-command "xelatex")
 
-;; Disable invasive lsp-mode features
-(setq lsp-ui-sideline-enable t   ; not anymore useful than flycheck
-      lsp-ui-doc-enable nil)        ; slow and redundant with K
-
 (use-package! kubernetes
   :init (progn
           (setq kubernetes-overview-custom-views-alist '((overview . (context statefulsets deployments services)))))
@@ -94,10 +90,6 @@
 
 (use-package! kubernetes-evil
   :after kubernetes)
-
-(defun lsp-go-install-save-hooks ()
-  (add-hook 'before-save-hook #'lsp-format-buffer t t)
-  (add-hook 'before-save-hook #'lsp-organize-imports t t))
 
 (after! go-mode
   (if (featurep! +lsp)
@@ -108,11 +100,30 @@
   (add-to-list 'browse-at-remote-remote-type-regexps
                '("^ghe\\.spotify\\.net$" . "github")))
 
+(defun lsp-go-install-save-hooks ()
+  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+
 (after! lsp-mode
+  ;; Disable invasive lsp-mode features
+  (setq
+   lsp-ui-sideline-enable t   ; not anymore useful than flycheck
+   lsp-ui-doc-enable nil        ; slow and redundant with K
+
+   lsp-ui-sideline-update-mode 'point
+   lsp-inhibit-message t
+
+   lsp-java-vmargs '("-XX:+UseG1GC" "-XX:+UseStringDeduplication" "-Xmx8G" "-Xms1G")
+   lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/1.11.0/jdt-language-server-1.11.0-202205051421.tar.gz")
+
+  (with-eval-after-load 'lsp-rust
+    (require 'dap-cpptools))
+
   (lsp-register-custom-settings
    '(("gopls.completeUnimported" t t)
      ("gopls.codelenses" '(("test" . t)) t)
      ("gopls.staticcheck" t t)))
+
   (setq ;; lsp-rust-analyzer-server-display-inlay-hints t
    ;; lsp-metals-show-inferred-type t
    lsp-lens-enable t
@@ -125,9 +136,6 @@
       'tab-width
     (funcall orig-fn mode)))
 
-(with-eval-after-load 'lsp-rust
-  (require 'dap-cpptools))
-
 (use-package! ox-awesomecv
   :after org)
 
@@ -137,8 +145,6 @@
 (after! bazel
   (setq bazel-buildifier-before-save t))
 
-
-(setq! lsp-java-vmargs '("-XX:+UseG1GC" "-XX:+UseStringDeduplication" "-Xmx8G" "-Xms1G"))
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
 
