@@ -70,14 +70,6 @@
   :recipe (:host gitlab
            :repo "Titan-C/org-cv"))
 
-(package! gitconfig-mode
-    :recipe (:host github :repo "magit/git-modes"
-             :files ("gitconfig-mode.el")))
-(package! gitignore-mode
-    :recipe (:host github :repo "magit/git-modes"
-             :files ("gitignore-mode.el")))
-
-(unpin! gitignore-mode gitconfig-mode)
 
 (package! copilot
   :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
