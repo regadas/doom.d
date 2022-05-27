@@ -7,7 +7,7 @@
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
 (setq user-full-name "Filipe Regadas"
-      user-mail-address "filiperegadas@gmail.com")
+      user-mail-address "oss@regadas.email")
 
 (setq gc-cons-threshold most-positive-fixnum)
 
