@@ -46,6 +46,11 @@
 
 (auto-save-visited-mode +1)
 
+;; highlight undoed text
+(use-package! undo-hl
+  :hook ((text-mode . undo-hl-mode)
+         (prog-mode . undo-hl-mode)))
+
 ;;; :editor evil
 ;; Focus new window after splitting
 (setq evil-split-window-below t
