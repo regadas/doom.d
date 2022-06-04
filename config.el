@@ -30,6 +30,9 @@
 (setq doom-theme 'modus-operandi
       doom-font (font-spec :family "Iosevka" :size 16 :weight 'Medium))
 
+(setq doom-fallback-buffer-name "► Doom"
+      +doom-dashboard-name "► Doom")
+
 (setq-default line-spacing 3)
 
 ;; Prevents some cases of Emacs flickering
