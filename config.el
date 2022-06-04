@@ -101,7 +101,7 @@
 
 (use-package! kubernetes
   :init (progn
-          (setq kubernetes-overview-custom-views-alist '((overview . (context statefulsets deployments services)))))
+          (setq kubernetes-overview-custom-views-alist '((overview . (context statefulsets deployments services pods)))))
   :commands (kubernetes-overview))
 
 (use-package! kubernetes-evil
