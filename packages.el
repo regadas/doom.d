@@ -50,6 +50,7 @@
 ;(unpin! t)
 
 (package! modus-themes)
+(package! catppuccin-theme)
 (package! k8s-mode)
 (package! protobuf-mode)
 (package! kubernetes)
