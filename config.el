@@ -197,8 +197,13 @@
         "t" #'dhall-buffer-type-show))
 
 (use-package! dimmer
-  :custom (dimmer-fraction 0.3)
-  :config (dimmer-mode))
+  :hook (prog-mode . dimmer-mode)
+  :config
+  (dimmer-configure-company-box)
+  (dimmer-configure-org)
+  (dimmer-configure-magit)
+  (dimmer-configure-which-key)
+  (setq dimmer-fraction 0.3))
 
 ;; copilot.el
 ;; accept completion from copilot and fallback to company
