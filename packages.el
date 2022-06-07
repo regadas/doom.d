@@ -57,7 +57,6 @@
 (package! bazel)
 (package! ob-mermaid)
 (package! ob-http)
-(package! almost-mono-themes)
 (package! ob-sql-mode)
 (package! dhall-mode
   :recipe (:host github
