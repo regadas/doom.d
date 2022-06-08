@@ -241,3 +241,6 @@
                                        "cannot open shared object file")
                                (error-message-string e))
          (signal (car e) (cadr e)))))))
+
+(use-package! ob-sql-mode
+  :after org)
