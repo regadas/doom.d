@@ -58,9 +58,7 @@
 (package! ob-mermaid)
 (package! ob-http)
 (package! ob-sql-mode)
-(package! dhall-mode
-  :recipe (:host github
-           :repo "psibi/dhall-mode"))
+(package! dhall-mode)
 (package! magit-delta)
 (package! sql-trino)
 (package! dimmer)
