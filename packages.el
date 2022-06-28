@@ -61,8 +61,6 @@
 (package! dhall-mode)
 (package! sql-trino)
 (package! dimmer)
-(package! tree-sitter)
-(package! tree-sitter-langs)
 (package! undo-hl
   :recipe (:host github
            :repo "casouri/undo-hl"))
