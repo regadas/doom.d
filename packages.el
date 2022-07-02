@@ -62,11 +62,15 @@
 (package! magit-delta)
 (package! sql-trino)
 (package! dimmer)
+(package! tree-sitter)
+(package! tree-sitter-langs)
 (package! undo-hl
   :recipe (:host github
            :repo "casouri/undo-hl"))
+
 (package! org-cv
   :recipe (:host gitlab
            :repo "Titan-C/org-cv"))
+
 (package! copilot
   :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
