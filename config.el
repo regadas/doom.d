@@ -164,9 +164,6 @@
 (after! bazel
   (setq bazel-buildifier-before-save t))
 
-(use-package! magit-delta
-  :hook (magit-mode . magit-delta-mode))
-
 ;; dhall-mode highlight the syntax and run dhall format on save
 (use-package! dhall-mode
   :defer t

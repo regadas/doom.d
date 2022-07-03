@@ -59,7 +59,6 @@
 (package! ob-http)
 (package! ob-sql-mode)
 (package! dhall-mode)
-(package! magit-delta)
 (package! sql-trino)
 (package! dimmer)
 (package! tree-sitter)
