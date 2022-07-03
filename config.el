@@ -88,6 +88,9 @@
        :nv "gh"   #'+lookup/documentation
        ))
 
+(after! evil
+  (setq-default evil-escape-key-sequence "jj"))
+
 (after! treemacs
   (setq treemacs-git-mode 'deferred
         treemacs-collapse-dirs 20))
