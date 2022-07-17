@@ -127,9 +127,9 @@
 (after! lsp-mode
   ;; Disable invasive lsp-mode features
   (setq
-   lsp-ui-sideline-enable t   ; not anymore useful than flycheck
+   lsp-ui-sideline-enable nil   ; not anymore useful than flycheck
    lsp-ui-doc-enable nil        ; slow and redundant with K
-
+   lsp-lens-enable nil
    lsp-ui-sideline-update-mode 'point
    lsp-inhibit-message t
 
@@ -146,9 +146,8 @@
 
   (setq ;; lsp-rust-analyzer-server-display-inlay-hints t
    ;; lsp-metals-show-inferred-type t
-   lsp-lens-enable t
-   lsp-bash-highlight-parsing-errors t
-   +lsp-company-backends '(:separate company-capf company-yasnippet)))
+   lsp-bash-highlight-parsing-errors t))
+   ;; +lsp-company-backends '(:separate company-capf company-yasnippet)))
 
 (defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
   :around #'lsp--get-indent-width
