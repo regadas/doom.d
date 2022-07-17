@@ -123,6 +123,7 @@
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 
+(setq-hook! 'typescript-mode-hook +format-with-lsp nil)
 (after! lsp-mode
   ;; Disable invasive lsp-mode features
   (setq
