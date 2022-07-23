@@ -11,6 +11,8 @@
 
 (setq gc-cons-threshold most-positive-fixnum)
 
+(setq auth-sources '("~/.authinfo.gpg"))
+
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
 ;;
@@ -27,7 +29,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'catppuccin
+(setq doom-theme 'mindre
       doom-font (font-spec :family "Iosevka" :size 16 :weight 'Medium))
 
 (setq doom-fallback-buffer-name "► Doom"
@@ -52,8 +54,8 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type 'relative
-      scroll-conservatively 101)
+(setq display-line-numbers-type 'relative)
+;; scroll-conservatively 101)
 
 (auto-save-visited-mode +1)
 
@@ -110,6 +112,26 @@
 (use-package! kubernetes-evil
   :after kubernetes)
 
+(after! lsp-mode
+  ;; Disable invasive lsp-mode features
+  (setq lsp-lens-enable nil
+
+        lsp-java-vmargs '("-XX:+UseG1GC" "-XX:+UseStringDeduplication" "-Xmx8G" "-Xms1G")
+        lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/1.12.0/jdt-language-server-1.12.0-202206011637.tar.gz"
+
+        lsp-bash-highlight-parsing-errors t)
+
+  (with-eval-after-load 'lsp-rust
+    (require 'dap-cpptools))
+
+  (lsp-register-custom-settings
+   '(("gopls.completeUnimported" t t)
+     ("gopls.codelenses" '(("test" . t)) t)
+     ("gopls.staticcheck" t t))))
+
+(after! lsp-ui
+  (setq lsp-ui-doc-enable nil))     ; redundant with K
+
 (after! go-mode
   (if (featurep! +lsp)
       (add-hook 'go-mode-hook #'lsp-deferred)
@@ -124,30 +146,6 @@
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 
 (setq-hook! 'typescript-mode-hook +format-with-lsp nil)
-(after! lsp-mode
-  ;; Disable invasive lsp-mode features
-  (setq
-   lsp-ui-sideline-enable nil   ; not anymore useful than flycheck
-   lsp-ui-doc-enable nil        ; slow and redundant with K
-   lsp-lens-enable nil
-   lsp-ui-sideline-update-mode 'point
-   lsp-inhibit-message t
-
-   lsp-java-vmargs '("-XX:+UseG1GC" "-XX:+UseStringDeduplication" "-Xmx8G" "-Xms1G")
-   lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/1.12.0/jdt-language-server-1.12.0-202206011637.tar.gz")
-
-  (with-eval-after-load 'lsp-rust
-    (require 'dap-cpptools))
-
-  (lsp-register-custom-settings
-   '(("gopls.completeUnimported" t t)
-     ("gopls.codelenses" '(("test" . t)) t)
-     ("gopls.staticcheck" t t)))
-
-  (setq ;; lsp-rust-analyzer-server-display-inlay-hints t
-   ;; lsp-metals-show-inferred-type t
-   lsp-bash-highlight-parsing-errors t))
-   ;; +lsp-company-backends '(:separate company-capf company-yasnippet)))
 
 (defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
   :around #'lsp--get-indent-width
@@ -244,3 +242,14 @@
 
 (use-package! ob-sql-mode
   :after org)
+
+(use-package! jest-test-mode
+  :commands jest-test-mode
+  :hook (typescript-mode js-mode typescript-tsx-mode))
+
+(map! :after jest-test-mode
+      :map jest-test-mode-map
+      :localleader
+      :prefix "t"
+      "a" #'jest-test-run
+      "t" #'jest-test-run-at-point)

@@ -72,3 +72,7 @@
 (package! copilot
   :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
 (package! imenu-list)
+(package! mindre-theme)
+(package! kubel)
+(package! jest-test-mode
+  :recipe (:host github :repo "regadas/jest-test-mode"))
