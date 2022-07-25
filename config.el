@@ -244,3 +244,14 @@
 
 (use-package! ob-sql-mode
   :after org)
+
+(use-package! jest-test-mode
+  :commands jest-test-mode
+  :hook (typescript-mode js-mode typescript-tsx-mode))
+
+(map! :after jest-test-mode
+      :map jest-test-mode-map
+      :localleader
+      :prefix "t"
+      "a" #'jest-test-run
+      "t" #'jest-test-run-at-point)
