@@ -76,3 +76,5 @@
 (package! kubel)
 (package! jest-test-mode
   :recipe (:host github :repo "regadas/jest-test-mode"))
+(package! lsp-tailwindcss
+  :recipe (:host github :repo "merrickluo/lsp-tailwindcss"))

@@ -247,6 +247,10 @@
   :commands jest-test-mode
   :hook (typescript-mode js-mode typescript-tsx-mode))
 
+(use-package! lsp-tailwindcss
+  :init
+  (setq lsp-tailwindcss-add-on-mode t))
+
 (map! :after jest-test-mode
       :map jest-test-mode-map
       :localleader
