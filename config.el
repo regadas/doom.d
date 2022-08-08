@@ -113,6 +113,7 @@
 (after! lsp-mode
   ;; Disable invasive lsp-mode features
   (setq lsp-lens-enable nil
+        lsp-use-plists t
 
         lsp-java-vmargs '("-XX:+UseG1GC" "-XX:+UseStringDeduplication" "-Xmx8G" "-Xms1G")
         lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/1.12.0/jdt-language-server-1.12.0-202206011637.tar.gz"
