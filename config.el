@@ -110,6 +110,26 @@
 (use-package! kubernetes-evil
   :after kubernetes)
 
+(after! lsp-mode
+  ;; Disable invasive lsp-mode features
+  (setq lsp-lens-enable nil
+
+        lsp-java-vmargs '("-XX:+UseG1GC" "-XX:+UseStringDeduplication" "-Xmx8G" "-Xms1G")
+        lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/1.12.0/jdt-language-server-1.12.0-202206011637.tar.gz"
+
+        lsp-bash-highlight-parsing-errors t)
+
+  (with-eval-after-load 'lsp-rust
+    (require 'dap-cpptools))
+
+  (lsp-register-custom-settings
+   '(("gopls.completeUnimported" t t)
+     ("gopls.codelenses" '(("test" . t)) t)
+     ("gopls.staticcheck" t t))))
+
+(after! lsp-ui
+  (setq lsp-ui-doc-enable nil))     ; redundant with K
+
 (after! go-mode
   (if (featurep! +lsp)
       (add-hook 'go-mode-hook #'lsp-deferred)
@@ -124,30 +144,7 @@
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 
 (setq-hook! 'typescript-mode-hook +format-with-lsp nil)
-(after! lsp-mode
-  ;; Disable invasive lsp-mode features
-  (setq
-   lsp-ui-sideline-enable nil   ; not anymore useful than flycheck
-   lsp-ui-doc-enable nil        ; slow and redundant with K
-   lsp-lens-enable nil
-   lsp-ui-sideline-update-mode 'point
-   lsp-inhibit-message t
-
-   lsp-java-vmargs '("-XX:+UseG1GC" "-XX:+UseStringDeduplication" "-Xmx8G" "-Xms1G")
-   lsp-java-jdt-download-url "https://download.eclipse.org/jdtls/milestones/1.12.0/jdt-language-server-1.12.0-202206011637.tar.gz")
-
-  (with-eval-after-load 'lsp-rust
-    (require 'dap-cpptools))
-
-  (lsp-register-custom-settings
-   '(("gopls.completeUnimported" t t)
-     ("gopls.codelenses" '(("test" . t)) t)
-     ("gopls.staticcheck" t t)))
-
-  (setq ;; lsp-rust-analyzer-server-display-inlay-hints t
-   ;; lsp-metals-show-inferred-type t
-   lsp-bash-highlight-parsing-errors t))
-   ;; +lsp-company-backends '(:separate company-capf company-yasnippet)))
+(setq-hook! 'typescript-tsx-mode-hook +format-with-lsp nil)
 
 (defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
   :around #'lsp--get-indent-width
