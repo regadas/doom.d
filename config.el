@@ -27,7 +27,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-solarized-light
+(setq doom-theme 'doom-tokyo-night
       doom-font (font-spec :family "Iosevka" :size 16 :weight 'Medium))
 
 (setq doom-fallback-buffer-name "► Doom"
@@ -52,8 +52,8 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type 'relative
-      scroll-conservatively 101)
+(setq display-line-numbers-type 'relative)
+;; scroll-conservatively 101)
 
 (auto-save-visited-mode +1)
 
