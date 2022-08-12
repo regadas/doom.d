@@ -11,6 +11,8 @@
 
 (setq gc-cons-threshold most-positive-fixnum)
 
+(setq auth-sources '("~/.authinfo.gpg"))
+
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
 ;;
