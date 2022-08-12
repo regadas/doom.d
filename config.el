@@ -53,7 +53,6 @@
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type 'relative)
-;; scroll-conservatively 101)
 
 (auto-save-visited-mode +1)
 
