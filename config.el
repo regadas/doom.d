@@ -85,7 +85,7 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-(map! (:when (featurep! :tools lookup)
+(map! (:when (modulep! :tools lookup)
        :nv "gh"   #'+lookup/documentation
        ))
 
@@ -133,7 +133,7 @@
   (setq lsp-ui-doc-enable nil))     ; redundant with K
 
 (after! go-mode
-  (if (featurep! +lsp)
+  (if (modulep! +lsp)
       (add-hook 'go-mode-hook #'lsp-deferred)
     (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)))
 
@@ -170,7 +170,7 @@
   (add-hook 'dhall-mode-local-vars-hook #'lsp! 'append)
   :config
   (setq
-   dhall-format-at-save (featurep! :editor format +onsave)
+   dhall-format-at-save (modulep! :editor format +onsave)
    ;; uncomment the next line to disable automatic format
    ;; dhall-format-at-save nil
 
