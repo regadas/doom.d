@@ -32,9 +32,6 @@
 (setq doom-theme 'catppuccin
       doom-font (font-spec :family "Iosevka" :size 16))
 
-(setq doom-fallback-buffer-name "► Doom"
-      +doom-dashboard-name "► Doom")
-
 (setq-default line-spacing 3)
 
 (setq undo-limit 80000000                         ; Raise undo-limit to 80Mb
