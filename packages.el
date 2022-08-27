@@ -49,30 +49,35 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
 
-(package! modus-themes)
-(package! catppuccin-theme)
-(package! k8s-mode)
-(package! protobuf-mode)
-(package! kubernetes)
 (package! bazel)
-(package! ob-mermaid)
-(package! ob-http)
-(package! ob-sql-mode)
-(package! dhall-mode)
-(package! sql-trino)
-(package! dimmer)
-(package! undo-hl
+(package! catppuccin-theme)
+(package! copilot
   :recipe (:host github
-           :repo "casouri/undo-hl"))
+           :repo "zerolfx/copilot.el"
+           :files ("*.el" "dist")))
+(package! dhall-mode)
+(package! dimmer)
+(package! ef-themes)
+(package! imenu-list)
+(package! jest-test-mode
+  :recipe (:host github
+           :repo "regadas/jest-test-mode"))
+(package! k8s-mode)
+(package! kubel)
+(package! kubernetes)
+(package! lsp-tailwindcss
+  :recipe (:host github
+           :repo "merrickluo/lsp-tailwindcss"))
+(package! mindre-theme)
+(package! modus-themes)
+(package! ob-http)
+(package! ob-mermaid)
+(package! ob-sql-mode)
 (package! org-cv
   :recipe (:host gitlab
            :repo "Titan-C/org-cv"))
-(package! copilot
-  :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
-(package! imenu-list)
-(package! mindre-theme)
-(package! kubel)
-(package! jest-test-mode
-  :recipe (:host github :repo "regadas/jest-test-mode"))
-(package! lsp-tailwindcss
-  :recipe (:host github :repo "merrickluo/lsp-tailwindcss"))
+(package! protobuf-mode)
+(package! sql-trino)
+(package! undo-hl
+  :recipe (:host github
+           :repo "casouri/undo-hl"))
