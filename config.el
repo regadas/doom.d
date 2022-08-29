@@ -181,14 +181,12 @@
   (reformatter-define dhall-freeze-all
     :program dhall-command
     :args '("freeze" "--all")
-    :group 'dhall
     :lighter " DhFreezeAll")
-  (map! :after dhall-mode
-        :map dhall-mode-map
+  (map! :map dhall-mode-map
         :localleader
-        "l" #'dhall-lint
-        "ff" #'dhall-freeze
-        "fa" #'dhall-freeze-all
+        "l" #'dhall-lint-buffer
+        "ff" #'dhall-freeze-buffer
+        "fa" #'dhall-freeze-all-buffer
         "t" #'dhall-buffer-type-show))
 
 (use-package! dimmer
