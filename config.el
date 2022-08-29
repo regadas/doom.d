@@ -143,7 +143,6 @@
 
 (setq-hook! 'typescript-mode-hook +format-with-lsp nil)
 (setq-hook! 'typescript-tsx-mode-hook +format-with-lsp nil)
-(setq-hook! 'latex-mode-hook +format-with :none)
 
 (defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
   :around #'lsp--get-indent-width
