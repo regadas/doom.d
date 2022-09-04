@@ -68,6 +68,7 @@
 (package! lsp-tailwindcss
   :recipe (:host github
            :repo "merrickluo/lsp-tailwindcss"))
+(package! magit-delta)
 (package! mindre-theme)
 (package! modus-themes)
 (package! ob-http)

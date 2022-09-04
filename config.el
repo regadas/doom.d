@@ -234,3 +234,6 @@
       :prefix "t"
       "a" #'jest-test-run
       "t" #'jest-test-run-at-point)
+
+(use-package! magit-delta
+  :hook (magit-mode . magit-delta-mode))
