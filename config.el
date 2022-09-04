@@ -31,6 +31,7 @@
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'ef-day
       doom-font (font-spec :family "Iosevka" :size 16))
+      doom-font (font-spec :family "Iosevka SS09" :size 16))
 
 (setq-default line-spacing 3)
 
