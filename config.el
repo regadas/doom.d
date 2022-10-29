@@ -112,6 +112,7 @@
   ;; Disable invasive lsp-mode features
   (setq lsp-lens-enable nil
         lsp-use-plists t
+        lsp-auto-guess-root t
 
         lsp-java-vmargs '("-XX:+UseG1GC" "-XX:+UseStringDeduplication" "-Xmx8G" "-Xms1G")
 
