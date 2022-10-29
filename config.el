@@ -123,7 +123,6 @@
 
   (lsp-register-custom-settings
    '(("gopls.completeUnimported" t t)
-     ("gopls.codelenses" '(("test" . t)) t)
      ("gopls.staticcheck" t t))))
 
 (after! lsp-ui
