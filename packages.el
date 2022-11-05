@@ -82,4 +82,5 @@
 (package! undo-hl
   :recipe (:host github
            :repo "casouri/undo-hl"))
+(package! autothemer)
 (package! lsp-ltex)
