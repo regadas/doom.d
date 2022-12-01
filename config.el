@@ -236,3 +236,13 @@
 
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
+
+(after! format-all
+  (progn
+    (puthash 'sqlformat "sqlformat" format-all--executable-table)
+    (puthash 'sqlformat nil format-all--install-table)
+    (puthash 'sqlformat (lambda (executable mode-result)
+                          (ignore mode-result)
+                          (format-all--buffer-easy executable "-r" "-" ))
+             format-all--format-table)
+    'sqlformat))
