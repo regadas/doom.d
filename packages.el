@@ -84,3 +84,4 @@
            :repo "casouri/undo-hl"))
 (package! autothemer)
 (package! lsp-ltex)
+(package! counsel-jq)
