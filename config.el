@@ -9,8 +9,6 @@
 (setq user-full-name "Filipe Regadas"
       user-mail-address "oss@regadas.email")
 
-(setq gc-cons-threshold most-positive-fixnum)
-
 (setq auth-sources '("~/.authinfo.gpg"))
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
