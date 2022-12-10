@@ -52,6 +52,7 @@
 (setq display-line-numbers-type 'relative)
 
 (auto-save-visited-mode +1)
+(zoom-mode +1)
 
 ;; highlight undoed text
 (use-package! undo-hl

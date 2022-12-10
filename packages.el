@@ -85,3 +85,4 @@
 (package! autothemer)
 (package! lsp-ltex)
 (package! counsel-jq)
+(package! zoom)
