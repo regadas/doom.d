@@ -86,3 +86,7 @@
 (package! lsp-ltex)
 (package! counsel-jq)
 (package! zoom)
+(package! markdown-xwidget
+  :recipe (:host github
+           :repo "cfclrk/markdown-xwidget"
+           :files (:defaults "resources")))
