@@ -236,13 +236,3 @@
              format-all--format-table)
     'sqlformat))
 
-(use-package! markdown-xwidget
-  :after markdown-mode
-  :config
-  (map! :map markdown-mode-map
-        :localleader
-        "x" #' markdown-xwidget-preview-mode)
-  (setq markdown-xwidget-command "pandoc"
-        markdown-xwidget-github-theme "light"
-        markdown-xwidget-mermaid-theme "default"
-        markdown-xwidget-code-block-theme "default"))
