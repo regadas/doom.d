@@ -64,7 +64,6 @@
            :repo "regadas/jest-test-mode"))
 (package! k8s-mode)
 (package! kubel)
-(package! kubernetes)
 (package! lsp-tailwindcss
   :recipe (:host github
            :repo "merrickluo/lsp-tailwindcss"))

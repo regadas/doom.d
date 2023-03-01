@@ -97,14 +97,6 @@
 (setq-default TeX-engine 'xetex
               pdf-latex-command "xelatex")
 
-(use-package! kubernetes
-  :init (progn
-          (setq kubernetes-overview-custom-views-alist '((overview . (context statefulsets deployments services pods)))))
-  :commands (kubernetes-overview))
-
-(use-package! kubernetes-evil
-  :after kubernetes)
-
 (after! lsp-mode
   ;; Disable invasive lsp-mode features
   (setq lsp-lens-enable nil
