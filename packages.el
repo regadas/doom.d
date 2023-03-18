@@ -81,3 +81,4 @@
 (package! autothemer)
 (package! counsel-jq)
 (package! zoom)
+(package! d2-mode)

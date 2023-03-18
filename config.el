@@ -208,3 +208,4 @@
              format-all--format-table)
     'sqlformat))
 
+(add-to-list 'auto-mode-alist '("\\.d2\\'" . d2-mode))
