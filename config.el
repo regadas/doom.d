@@ -97,47 +97,19 @@
 (setq-default TeX-engine 'xetex
               pdf-latex-command "xelatex")
 
-(after! lsp-mode
-  ;; Disable invasive lsp-mode features
-  (setq lsp-lens-enable nil
-        lsp-use-plists t
-        lsp-auto-guess-root t
-
-        lsp-java-vmargs '("-XX:+UseG1GC" "-XX:+UseStringDeduplication" "-Xmx8G" "-Xms1G")
-
-        lsp-bash-highlight-parsing-errors t)
-
-  (with-eval-after-load 'lsp-rust
-    (require 'dap-cpptools))
-
-  (lsp-register-custom-settings
-   '(("gopls.completeUnimported" t t)
-     ("gopls.staticcheck" t t))))
-
-(after! lsp-ui
-  (setq lsp-ui-doc-enable nil))     ; redundant with K
-
-(after! go-mode
-  (if (modulep! +lsp)
-      (add-hook 'go-mode-hook #'lsp-deferred)
-    (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)))
-
 (after! browse-at-remote
   (add-to-list 'browse-at-remote-remote-type-regexps
                '("^ghe\\.spotify\\.net$" . "github")))
 
-(defun lsp-go-install-save-hooks ()
-  (add-hook 'before-save-hook #'lsp-format-buffer t t)
-  (add-hook 'before-save-hook #'lsp-organize-imports t t))
 
-(setq-hook! 'typescript-mode-hook +format-with-lsp nil)
-(setq-hook! 'typescript-tsx-mode-hook +format-with-lsp nil)
+;; (setq-hook! 'typescript-mode-hook +format-with-lsp nil)
+;; (setq-hook! 'typescript-tsx-mode-hook +format-with-lsp nil)
 
-(defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
-  :around #'lsp--get-indent-width
-  (if (provided-mode-derived-p mode 'web-mode)
-      'tab-width
-    (funcall orig-fn mode)))
+;; (defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
+;;   :around #'lsp--get-indent-width
+;;   (if (provided-mode-derived-p mode 'web-mode)
+;;       'tab-width
+;;     (funcall orig-fn mode)))
 
 (use-package! ox-awesomecv
   :after org)
@@ -212,9 +184,9 @@
   :commands jest-test-mode
   :hook (typescript-mode js-mode typescript-tsx-mode))
 
-(use-package! lsp-tailwindcss
-  :init
-  (setq lsp-tailwindcss-add-on-mode t))
+;; (use-package! lsp-tailwindcss
+;;   :init
+;;   (setq lsp-tailwindcss-add-on-mode t))
 
 (map! :after jest-test-mode
       :map jest-test-mode-map

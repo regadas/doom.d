@@ -64,9 +64,6 @@
            :repo "regadas/jest-test-mode"))
 (package! k8s-mode)
 (package! kubel)
-(package! lsp-tailwindcss
-  :recipe (:host github
-           :repo "merrickluo/lsp-tailwindcss"))
 (package! magit-delta)
 (package! mindre-theme)
 (package! modus-themes)
@@ -82,6 +79,5 @@
   :recipe (:host github
            :repo "casouri/undo-hl"))
 (package! autothemer)
-(package! lsp-ltex)
 (package! counsel-jq)
 (package! zoom)
