@@ -80,8 +80,8 @@
 ;; they are implemented.
 
 (map! (:when (modulep! :tools lookup)
-       :nv "gh"   #'+lookup/documentation
-       ))
+        :nv "gh"   #'+lookup/documentation
+        ))
 
 (after! evil
   (setq-default evil-escape-key-sequence "jj"))
