@@ -207,5 +207,9 @@
                           (format-all--buffer-easy executable "-r" "-" ))
              format-all--format-table)
     'sqlformat))
+(use-package! kubel
+  :after (vterm)
+  :config (kubel-vterm-setup))
+
 
 (add-to-list 'auto-mode-alist '("\\.d2\\'" . d2-mode))
