@@ -81,3 +81,4 @@
 (package! counsel-jq)
 (package! zoom)
 (package! d2-mode)
+(package! eglot-java)
