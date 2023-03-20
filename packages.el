@@ -78,7 +78,6 @@
 (package! undo-hl
   :recipe (:host github
            :repo "casouri/undo-hl"))
-(package! autothemer)
 (package! counsel-jq)
 (package! zoom)
 (package! d2-mode)
