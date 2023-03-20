@@ -105,12 +105,6 @@
 ;; (setq-hook! 'typescript-mode-hook +format-with-lsp nil)
 ;; (setq-hook! 'typescript-tsx-mode-hook +format-with-lsp nil)
 
-;; (defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
-;;   :around #'lsp--get-indent-width
-;;   (if (provided-mode-derived-p mode 'web-mode)
-;;       'tab-width
-;;     (funcall orig-fn mode)))
-
 (use-package! ox-awesomecv
   :after org)
 
@@ -183,10 +177,6 @@
 (use-package! jest-test-mode
   :commands jest-test-mode
   :hook (typescript-mode js-mode typescript-tsx-mode))
-
-;; (use-package! lsp-tailwindcss
-;;   :init
-;;   (setq lsp-tailwindcss-add-on-mode t))
 
 (map! :after jest-test-mode
       :map jest-test-mode-map
