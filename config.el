@@ -50,7 +50,11 @@
 (setq display-line-numbers-type 'relative)
 
 (auto-save-visited-mode +1)
+
 (zoom-mode +1)
+(after! zoom-mode
+  ;; set window size using the golden ratio
+  (setq zoom-size '(0.618 . 0.618)))
 
 ;; highlight undoed text
 (use-package! undo-hl
