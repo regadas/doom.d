@@ -158,22 +158,13 @@
   (setq dimmer-fraction 0.3))
 
 ;; copilot.el
-;; accept completion from copilot and fallback to company
-(defun custom-tab ()
-  (interactive)
-  (or (copilot-accept-completion)
-      (company-indent-or-complete-common nil)))
-
 (use-package! copilot
-  :hook (prog-mode . copilot-mode)
+  :hook ((prog-mode yaml-mode) . copilot-mode)
   :bind (("C-TAB" . 'copilot-accept-completion-by-word)
          ("C-<tab>" . 'copilot-accept-completion-by-word)
-         :map company-active-map
-         ("<tab>" . 'custom-tab)
-         ("TAB" . 'custom-tab)
-         :map company-mode-map
-         ("<tab>" . 'custom-tab)
-         ("TAB" . 'custom-tab)))
+         :map copilot-completion-map
+         ("<tab>" . 'copilot-accept-completion)
+         ("TAB" . 'copilot-accept-completion)))
 
 (use-package! ob-sql-mode
   :after org)
