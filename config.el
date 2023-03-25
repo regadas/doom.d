@@ -196,5 +196,11 @@
   :after (vterm)
   :config (kubel-vterm-setup))
 
+(after! sql
+  ;; set formatter to sql-formatter
+  (set-formatter!
+    'sql-formatter
+    "sql-formatter"
+    :modes '(sql-mode)))
 
 (add-to-list 'auto-mode-alist '("\\.d2\\'" . d2-mode))
