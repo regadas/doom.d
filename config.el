@@ -118,25 +118,15 @@
 (after! bazel
   (setq bazel-buildifier-before-save t))
 
+
 ;; dhall-mode highlight the syntax and run dhall format on save
 (use-package! dhall-mode
   :defer t
   :init
-  (add-hook 'dhall-mode-local-vars-hook #'lsp! 'append)
+  (set-eglot-client! 'dhall-mode '("dhall-lsp-server"))
+  (add-hook! 'dhall-mode-local-vars-hook #'lsp! 'append)
   :config
-  (setq
-   dhall-format-at-save (modulep! :editor format +onsave)
-   ;; uncomment the next line to disable automatic format
-   ;; dhall-format-at-save nil
-
-   ;; comment the next line to use unicode syntax
-   dhall-format-arguments (\` ("--ascii"))
-
-   ;; header-line is obsoleted by lsp-mode
-   dhall-use-header-line nil)
-
   (set-repl-handler! 'dhall-mode #'dhall-repl-show)
-
   (reformatter-define dhall-freeze-all
     :program dhall-command
     :args '("freeze" "--all")
