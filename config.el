@@ -55,6 +55,9 @@
 (after! zoom-mode
   ;; set window size using the golden ratio
   (setq zoom-size '(0.618 . 0.618)))
+(after! vterm
+  (setq vterm-max-scrollback 6000
+        vterm-timer-delay 0.01))
 
 ;; highlight undoed text
 (use-package! undo-hl
