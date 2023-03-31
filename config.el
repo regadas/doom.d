@@ -52,9 +52,8 @@
 (auto-save-visited-mode +1)
 
 (zoom-mode +1)
-(after! zoom-mode
-  ;; set window size using the golden ratio
-  (setq zoom-size '(0.618 . 0.618)))
+(setq zoom-size '(0.618 . 0.618))
+
 (after! vterm
   (setq vterm-max-scrollback 6000
         vterm-timer-delay 0.01))
