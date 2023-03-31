@@ -55,7 +55,6 @@
   :recipe (:host github
            :repo "zerolfx/copilot.el"
            :files ("*.el" "dist")))
-(package! dhall-mode)
 (package! dimmer)
 (package! ef-themes)
 (package! imenu-list)

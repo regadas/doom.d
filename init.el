@@ -176,7 +176,7 @@
        ;;terra             ; Earth and Moon in alignment for performance.
        (web +tree-sitter)               ; the tubes
        (yaml +lsp +tree-sitter)              ; JSON, but readable
-       ;;dhall
+       dhall
 
        :email
        ;;(mu4e +gmail)
