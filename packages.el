@@ -82,3 +82,4 @@
 (package! d2-mode)
 (package! sqlformat)
 (package! eglot-java)
+(package! gptel)
