@@ -185,3 +185,10 @@
     :modes '(sql-mode)))
 
 (add-to-list 'auto-mode-alist '("\\.d2\\'" . d2-mode))
+(after! d2-mode
+  (reformatter-define d2-format
+    :program "d2"
+    :stdin nil
+    :stdout nil
+    :args (list "fmt" input-file)
+    :lighter " D2Fmt"))
