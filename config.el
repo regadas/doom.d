@@ -38,6 +38,8 @@
       ;; scroll-preserve-screen-position 'always  ; Don't have `point' jump around
       scroll-margin 2)                            ; It's nice to maintain a little margin
 
+(setq default-text-properties '(line-spacing 0.05 line-height 1.05))
+
 ;; Prevents some cases of Emacs flickering
 ;; (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
