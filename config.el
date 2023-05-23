@@ -120,7 +120,6 @@
 (after! bazel
   (setq bazel-buildifier-before-save t))
 
-
 ;; dhall-mode highlight the syntax and run dhall format on save
 (use-package! dhall-mode
   :defer t
