@@ -193,3 +193,16 @@
     :stdout nil
     :args (list "fmt" input-file)
     :lighter " D2Fmt"))
+
+(setq! eglot-java-eclipse-jdt-args
+       '(
+         "-Xmx6G"
+         "-XX:+UseG1GC"
+         "-XX:+UseStringDeduplication"
+         "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.18.0-darwin-arm64/lombok/lombok-1.18.27.jar"
+         "--add-modules=ALL-SYSTEM"
+         "--add-opens"
+         "java.base/java.util=ALL-UNNAMED"
+         "--add-opens"
+         "java.base/java.lang=ALL-UNNAMED"
+         ))
