@@ -56,7 +56,7 @@
 
 (after! vterm
   (setq vterm-max-scrollback 6000
-        vterm-timer-delay 0.01))
+        vterm-timer-delay nil))
 
 ;; highlight undoed text
 (use-package! undo-hl
