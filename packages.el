@@ -64,7 +64,6 @@
 (package! k8s-mode)
 (package! kubel)
 (package! magit-delta)
-(package! mindre-theme)
 (package! modus-themes)
 (package! ob-http)
 (package! ob-mermaid)
