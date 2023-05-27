@@ -52,7 +52,7 @@
 (setq display-line-numbers-type 'relative)
 
 (zoom-mode +1)
-(setq zoom-size '(0.618 . 0.618))
+(setq zoom-size '(0.8 . 0.8))
 
 (after! vterm
   (setq vterm-max-scrollback 6000
