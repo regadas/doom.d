@@ -51,8 +51,11 @@
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type 'relative)
 
-(zoom-mode +1)
-(setq zoom-size '(0.8 . 0.8))
+(use-package! zoom
+  :hook (doom-first-input . zoom-mode)
+  :config
+  (setq zoom-size '(0.678 . 0.678)
+        zoom-ignored-major-modes '(vterm-mode)))
 
 (after! vterm
   (setq vterm-max-scrollback 6000
