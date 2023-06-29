@@ -55,7 +55,7 @@
   :hook (doom-first-input . zoom-mode)
   :config
   (setq zoom-size '(0.678 . 0.678)
-        zoom-ignored-major-modes '(vterm-mode)))
+        zoom-ignored-buffer-name-regexps '("^*doom:vterm-popup*")))
 
 (after! vterm
   (setq vterm-max-scrollback 6000
