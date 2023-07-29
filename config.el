@@ -196,15 +196,53 @@
     :args (list "fmt" input-file)
     :lighter " D2Fmt"))
 
-(setq! eglot-java-eclipse-jdt-args
-       '(
-         "-Xmx6G"
-         "-XX:+UseG1GC"
-         "-XX:+UseStringDeduplication"
-         "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.18.0-darwin-arm64/lombok/lombok-1.18.27.jar"
-         "--add-modules=ALL-SYSTEM"
-         "--add-opens"
-         "java.base/java.util=ALL-UNNAMED"
-         "--add-opens"
-         "java.base/java.lang=ALL-UNNAMED"
-         ))
+(after! lsp-mode
+  ;; Disable invasive lsp-mode features
+  (setq lsp-lens-enable nil
+        lsp-use-plists t
+        lsp-auto-guess-root t
+
+        lsp-java-vmargs '(
+                          "-Xmx6G"
+                          "-XX:+UseG1GC"
+                          "-XX:+UseStringDeduplication"
+                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.20.0-darwin-arm64/lombok/lombok-1.18.28.jar"
+                          "--add-modules=ALL-SYSTEM"
+                          "--add-opens"
+                          "java.base/java.util=ALL-UNNAMED"
+                          "--add-opens"
+                          "java.base/java.lang=ALL-UNNAMED"
+                          )
+        lsp-bash-highlight-parsing-errors t)
+
+  (with-eval-after-load 'lsp-rust
+    (require 'dap-cpptools))
+
+  (lsp-register-custom-settings
+   '(("gopls.completeUnimported" t t)
+     ("gopls.staticcheck" t t))))
+
+(after! lsp-ui
+  (setq lsp-ui-doc-enable nil))     ; redundant with K
+
+(after! go-mode
+  (if (modulep! +lsp)
+      (add-hook 'go-mode-hook #'lsp-deferred)
+    (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)))
+
+(defun lsp-go-install-save-hooks ()
+  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+
+(setq-hook! 'typescript-mode-hook +format-with-lsp nil)
+(setq-hook! 'typescript-tsx-mode-hook +format-with-lsp nil)
+
+(defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
+  :around #'lsp--get-indent-width
+  (if (provided-mode-derived-p mode 'web-mode)
+      'tab-width
+    (funcall orig-fn mode)))
+
+(use-package! lsp-tailwindcss
+  :init
+  (setq lsp-tailwindcss-add-on-mode t))
