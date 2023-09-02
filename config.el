@@ -51,10 +51,10 @@
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type 'relative)
 
-(use-package! zoom
-  :hook (doom-first-input . zoom-mode)
-  :config
-  (setq zoom-size '(0.678 . 0.678)))
+;; (use-package! zoom
+;;   :hook (doom-first-input . zoom-mode)
+;;   :config
+;;   (setq zoom-size '(0.678 . 0.678)))
 
 (after! vterm
   (setq vterm-max-scrollback 6000
@@ -206,7 +206,7 @@
                           "-Xmx6G"
                           "-XX:+UseG1GC"
                           "-XX:+UseStringDeduplication"
-                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.20.0-darwin-arm64/lombok/lombok-1.18.28.jar"
+                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.21.0-darwin-arm64/lombok/lombok-1.18.28.jar"
                           "--add-modules=ALL-SYSTEM"
                           "--add-opens"
                           "java.base/java.util=ALL-UNNAMED"
