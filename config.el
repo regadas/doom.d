@@ -206,7 +206,7 @@
                           "-Xmx6G"
                           "-XX:+UseG1GC"
                           "-XX:+UseStringDeduplication"
-                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.21.0-darwin-arm64/lombok/lombok-1.18.28.jar"
+                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.22.1-darwin-arm64/lombok/lombok-1.18.28.jar"
                           "--add-modules=ALL-SYSTEM"
                           "--add-opens"
                           "java.base/java.util=ALL-UNNAMED"
