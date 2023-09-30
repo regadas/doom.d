@@ -132,7 +132,7 @@
        ;;gdscript          ; the language you waited for
        (go +lsp +tree-sitter)         ; the hipster dialect
        ;;(haskell +dante)  ; a language that's lazier than I am
-       (haskell +lsp +tree-sitter)  ; a language that's lazier than I am
+       ;;(haskell +lsp +tree-sitter)  ; a language that's lazier than I am
        ;;hy                ; readability of scheme w/ speed of python
        ;;idris             ;
        (json +lsp +tree-sitter)             ; At least it ain't XML
