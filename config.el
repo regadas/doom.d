@@ -94,10 +94,6 @@
 (after! evil
   (setq-default evil-escape-key-sequence "jj"))
 
-(after! treemacs
-  (setq treemacs-git-mode 'deferred
-        treemacs-collapse-dirs 20))
-
 (after! projectile
   (setq projectile-project-search-path '("~/projects/" "~/projects/spotify" "~/projects/experiments")
         projectile-project-root-files-bottom-up '(".projectile" ".git")))
