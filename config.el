@@ -30,13 +30,15 @@
 (setq doom-theme 'modus-operandi
       doom-font (font-spec :family "Iosevka SS09" :size 16))
 
-(setq undo-limit 80000000                         ; Raise undo-limit to 80Mb
+(setq gcmh-high-cons-threshold (* 1024 1024 1024)
+      undo-limit 80000000                         ; Raise undo-limit to 80Mb
       evil-want-fine-undo t                       ; By default while in insert all changes are one big blob. Be more granular
       auto-save-default t                         ; Nobody likes to loose work, I certainly don't
       truncate-string-ellipsis "…"               ; Unicode ellispis are nicer than "...", and also save /precious/ space
       password-cache-expiry nil                   ; I can trust my computers ... can't I?
       ;; scroll-preserve-screen-position 'always  ; Don't have `point' jump around
-      scroll-margin 2)                            ; It's nice to maintain a little margin
+      scroll-margin 2                            ; It's nice to maintain a little margin
+      read-process-output-max (* 1024 1024))       ; 1mb
 
 (setq default-text-properties '(line-spacing 0.10 line-height 1.10))
 
