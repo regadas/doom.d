@@ -177,6 +177,7 @@
        (web +tree-sitter)               ; the tubes
        (yaml +lsp +tree-sitter)              ; JSON, but readable
        dhall
+       (zig +lsp +tree-sitter)
 
        :email
        ;;(mu4e +gmail)
