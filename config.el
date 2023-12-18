@@ -245,3 +245,9 @@
 (use-package! lsp-tailwindcss
   :init
   (setq lsp-tailwindcss-add-on-mode t))
+
+(use-package! ultra-scroll-mac
+  :init
+  (setq scroll-conservatively 101)
+  :config
+  (ultra-scroll-mac-mode 1))

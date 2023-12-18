@@ -86,3 +86,6 @@
    :recipe (:host github
             :repo "merrickluo/lsp-tailwindcss"))
 (package! lsp-ltex)
+(package! ultra-scroll-mac
+   :recipe (:host github
+            :repo "jdtsmith/ultra-scroll-mac"))
