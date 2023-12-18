@@ -246,6 +246,12 @@
   :init
   (setq lsp-tailwindcss-add-on-mode t))
 
+
+(after! dired
+  (setq delete-by-moving-to-trash t
+        dired-listing-switches "-lat")  ; sort by date
+  (add-hook! 'dired-mode-hook #'dired-hide-details-mode))
+
 (use-package! ultra-scroll-mac
   :init
   (setq scroll-conservatively 101)
