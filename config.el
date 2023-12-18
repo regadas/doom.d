@@ -98,7 +98,8 @@
 
 (after! projectile
   (setq projectile-project-search-path '("~/projects/" "~/projects/spotify" "~/projects/experiments")
-        projectile-project-root-files-bottom-up '(".projectile" ".git")))
+        projectile-project-root-files-bottom-up '(".projectile" ".git")
+        projectile-enable-caching t))
 
 (setq-default TeX-engine 'xetex
               pdf-latex-command "xelatex")
