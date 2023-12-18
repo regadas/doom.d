@@ -39,7 +39,8 @@
       password-cache-expiry nil                   ; I can trust my computers ... can't I?
       ;; scroll-preserve-screen-position 'always  ; Don't have `point' jump around
       scroll-margin 2                            ; It's nice to maintain a little margin
-      read-process-output-max (* 1024 1024))       ; 1mb
+      read-process-output-max (* 128 1024 1024)
+      process-adaptive-read-buffering nil)
 
 (setq default-text-properties '(line-spacing 0.10 line-height 1.10))
 
