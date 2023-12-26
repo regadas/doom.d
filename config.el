@@ -116,9 +116,8 @@
   (add-to-list 'browse-at-remote-remote-type-regexps
                '("^ghe\\.spotify\\.net$" . "github")))
 
-
-;; (setq-hook! 'typescript-mode-hook +format-with-lsp nil)
-;; (setq-hook! 'typescript-tsx-mode-hook +format-with-lsp nil)
+(setq-hook! 'typescript-mode-hook +format-with-lsp nil)
+(setq-hook! 'typescript-tsx-mode-hook +format-with-lsp nil)
 
 (use-package! ox-awesomecv
   :after org)
@@ -242,9 +241,6 @@
 (defun lsp-go-install-save-hooks ()
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
-
-(setq-hook! 'typescript-mode-hook +format-with-lsp nil)
-(setq-hook! 'typescript-tsx-mode-hook +format-with-lsp nil)
 
 (defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
   :around #'lsp--get-indent-width
