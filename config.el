@@ -77,6 +77,9 @@
 ;;;; Which key
 (setq which-key-idle-delay 0.3)
 
+(after! dap-mode
+  (setq dap-java--var-format "\"$%s\""))
+
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
 ;; - `load!' for loading external *.el files relative to this one
