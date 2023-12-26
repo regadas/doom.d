@@ -74,6 +74,9 @@
 (setq evil-split-window-below t
       evil-vsplit-window-right t)
 
+;;;; Which key
+(setq which-key-idle-delay 0.3)
+
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
 ;; - `load!' for loading external *.el files relative to this one
