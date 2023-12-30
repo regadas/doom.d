@@ -252,6 +252,34 @@
   :init
   (setq lsp-tailwindcss-add-on-mode t))
 
+;; (use-package! astro-ts-mode)
+;;   ;; NOTE Run this on a new machine or if it errors
+;;   ;; :init
+;;   ;; (mapc #'treesit-install-language-grammar '(astro css tsx))
+;;   :config
+;;   (setq treesit-language-source-alist
+;;         '((astro "https://github.com/virchau13/tree-sitter-astro")
+;;           (css "https://github.com/tree-sitter/tree-sitter-css")
+;;           (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))))
+
+;; (use-package! treesit-auto
+;;   :config
+;;   (let ((astro-recipe (make-treesit-auto-recipe
+;;                        :lang 'astro
+;;                        :ts-mode 'astro-ts-mode
+;;                        :url "https://github.com/virchau13/tree-sitter-astro"
+;;                        :revision "master"
+;;                        :source-dir "src")))
+;;     (add-to-list 'treesit-auto-recipe-list astro-recipe))
+;;   (global-treesit-auto-mode))
+
+(use-package! ellama
+  :init
+  (setopt ellama-language "English")
+  (require 'llm-ollama)
+  (setopt ellama-provider
+          (make-llm-ollama
+           :chat-model "codellama:7b-instruct" :embedding-model "codellama:7b-instruct")))
 
 (after! dired
   (setq delete-by-moving-to-trash t
@@ -263,3 +291,6 @@
   (setq scroll-conservatively 101)
   :config
   (ultra-scroll-mac-mode 1))
+
+(after! (treemacs projectile)
+  (treemacs-project-follow-mode t))
