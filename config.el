@@ -293,4 +293,6 @@
   (ultra-scroll-mac-mode 1))
 
 (after! (treemacs projectile)
-  (treemacs-project-follow-mode t))
+  (treemacs-project-follow-mode t)
+  (treemacs-git-mode 'deferred)
+  (setq treemacs-collapse-dirs 20))
