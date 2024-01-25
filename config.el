@@ -208,18 +208,18 @@
   ;; Disable invasive lsp-mode features
   (setq lsp-lens-enable nil
         lsp-use-plists t
+        lsp-log-io nil
         lsp-auto-guess-root t
+        lsp-enable-file-watchers nil
+        lsp-idle-delay 0.01
 
+        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.31.0/jdt-language-server-1.31.0-202401111522.tar.gz"
         lsp-java-vmargs '(
-                          "-Xmx6G"
-                          "-XX:+UseG1GC"
+                          "-XX:+UnlockExperimentalVMOptions"
+                          "-Xmx8G"
+                          "-XX:+UseZGC"
                           "-XX:+UseStringDeduplication"
-                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.22.1-darwin-arm64/lombok/lombok-1.18.28.jar"
-                          "--add-modules=ALL-SYSTEM"
-                          "--add-opens"
-                          "java.base/java.util=ALL-UNNAMED"
-                          "--add-opens"
-                          "java.base/java.lang=ALL-UNNAMED"
+                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.26.0-darwin-arm64/lombok/lombok-1.18.31-3454.jar"
                           )
         lsp-bash-highlight-parsing-errors t)
 
