@@ -114,7 +114,7 @@
 
 (after! browse-at-remote
   (add-to-list 'browse-at-remote-remote-type-regexps
-               '("^ghe\\.spotify\\.net$" . "github")))
+               '(:host "^ghe\\.spotify\\.net$" :type "github") 'append))
 
 (setq-hook! 'typescript-mode-hook +format-with-lsp nil)
 (setq-hook! 'typescript-tsx-mode-hook +format-with-lsp nil)
