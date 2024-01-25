@@ -50,7 +50,6 @@
 ;(unpin! t)
 
 (package! bazel)
-(package! catppuccin-theme)
 (package! copilot
   :recipe (:host github
            :repo "zerolfx/copilot.el"
