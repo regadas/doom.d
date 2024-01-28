@@ -296,3 +296,7 @@
   (treemacs-project-follow-mode t)
   (treemacs-git-mode 'deferred)
   (setq treemacs-collapse-dirs 20))
+
+(after! doom-modeline
+  (nyan-mode t)
+  (setq doom-modeline-major-mode-icon t))

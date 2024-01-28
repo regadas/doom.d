@@ -49,6 +49,7 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
 
+(package! nyan-mode)
 (package! bazel)
 (package! copilot
   :recipe (:host github
