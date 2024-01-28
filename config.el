@@ -132,7 +132,6 @@
 (use-package! dhall-mode
   :defer t
   :init
-  (set-eglot-client! 'dhall-mode '("dhall-lsp-server"))
   (add-hook! 'dhall-mode-local-vars-hook #'lsp! 'append)
   :config
   (set-repl-handler! 'dhall-mode #'dhall-repl-show)
