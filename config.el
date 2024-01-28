@@ -41,9 +41,6 @@
       scroll-margin 2                            ; It's nice to maintain a little margin
       read-process-output-max (* 128 1024 1024)
       process-adaptive-read-buffering nil)
-
-(setq default-text-properties '(line-spacing 0.10 line-height 1.10))
-
 ;; Prevents some cases of Emacs flickering
 ;; (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
