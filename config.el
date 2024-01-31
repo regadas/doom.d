@@ -139,7 +139,7 @@
         "t" #'dhall-buffer-type-show))
 
 (use-package! dimmer
-  :hook (prog-mode . dimmer-mode)
+  ;; :hook (prog-mode . dimmer-mode)
   :config
   (dimmer-configure-company-box)
   (dimmer-configure-org)
