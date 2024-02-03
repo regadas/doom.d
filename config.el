@@ -204,7 +204,7 @@
         lsp-enable-file-watchers nil
         lsp-idle-delay 0.01
 
-        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.31.0/jdt-language-server-1.31.0-202401111522.tar.gz"
+        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.32.0/jdt-language-server-1.32.0-202402011424.tar.gz"
         lsp-java-vmargs '(
                           "-XX:+UnlockExperimentalVMOptions"
                           "-Xmx8G"
