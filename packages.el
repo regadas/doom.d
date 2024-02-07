@@ -66,6 +66,7 @@
 (package! magit-delta)
 (package! modus-themes)
 (package! ob-http)
+(package! mermaid-mode)
 (package! ob-mermaid)
 (package! ob-sql-mode)
 (package! org-cv
