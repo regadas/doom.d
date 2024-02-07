@@ -87,5 +87,6 @@
             :repo "merrickluo/lsp-tailwindcss"))
 (package! lsp-ltex)
 (package! ultra-scroll-mac
+(package! ellama)
    :recipe (:host github
             :repo "jdtsmith/ultra-scroll-mac"))
