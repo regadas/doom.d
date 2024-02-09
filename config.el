@@ -196,6 +196,11 @@
     :lighter " D2Fmt"))
 
 (after! lsp-mode
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection "nixd")
+                    :major-modes '(nix-mode)
+                    :priority 0
+                    :server-id 'nixd))
   ;; Disable invasive lsp-mode features
   (setq lsp-lens-enable nil
         lsp-use-plists t
