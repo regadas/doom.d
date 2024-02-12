@@ -282,12 +282,6 @@
         dired-listing-switches "-lat")  ; sort by date
   (add-hook! 'dired-mode-hook #'dired-hide-details-mode))
 
-(use-package! ultra-scroll-mac
-  :init
-  (setq scroll-conservatively 101)
-  :config
-  (ultra-scroll-mac-mode 1))
-
 (after! (treemacs projectile)
   (treemacs-project-follow-mode t)
   (treemacs-git-mode 'deferred)
