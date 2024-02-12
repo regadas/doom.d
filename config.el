@@ -3,7 +3,7 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
-(add-hook 'doom-after-init-hook (lambda () (tool-bar-mode 1) (tool-bar-mode 0)))
+;; (add-hook 'doom-after-init-hook (lambda () (tool-bar-mode 1) (tool-bar-mode 0)))
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
@@ -47,10 +47,10 @@
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type 'relative)
 
-;; (use-package! zoom
-;;   :hook (doom-first-input . zoom-mode)
-;;   :config
-;;   (setq zoom-size '(0.678 . 0.678)))
+(use-package! zoom
+  ;; :hook (doom-first-input . zoom-mode)
+  :config
+  (setq zoom-size '(0.678 . 0.678)))
 
 (after! vterm
   (setq vterm-max-scrollback 6000
