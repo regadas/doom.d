@@ -216,7 +216,7 @@
                           "-Xmx8G"
                           "-XX:+UseZGC"
                           "-XX:+UseStringDeduplication"
-                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.27.0-darwin-arm64/lombok/lombok-1.18.31.jar"
+                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.28.1-darwin-arm64/lombok/lombok-1.18.31.jar"
                           )
         lsp-bash-highlight-parsing-errors t)
 
