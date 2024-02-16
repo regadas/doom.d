@@ -52,8 +52,9 @@
 (package! nyan-mode)
 (package! bazel)
 (package! copilot
+  :pin "581cadd6f4229223fd5c57984f9595aeb86c84f7"
   :recipe (:host github
-           :repo "zerolfx/copilot.el"
+           :repo "copilot-emacs/copilot.el"
            :files ("*.el" "dist")))
 (package! dimmer)
 (package! ef-themes)
