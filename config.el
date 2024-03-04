@@ -294,3 +294,8 @@
 (after! doom-modeline
   (nyan-mode t)
   (setq doom-modeline-major-mode-icon t))
+
+(use-package! d2-mode
+  :config
+  (setq d2-output-format ".png"))
+
