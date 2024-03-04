@@ -53,6 +53,9 @@
   :config
   (setq zoom-size '(0.678 . 0.678)))
 
+(after! embark
+  (set-popup-rule! "^*Embark" :side 'bottom :select t :modeline nil :quit nil :ttl nil))
+
 (after! vterm
   (setq vterm-max-scrollback 6000
         vterm-timer-delay 0.0001))
