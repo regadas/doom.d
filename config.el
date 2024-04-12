@@ -214,13 +214,13 @@
         lsp-enable-file-watchers nil
         lsp-idle-delay 0.01
 
-        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.32.0/jdt-language-server-1.32.0-202402011424.tar.gz"
+        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.34.0/jdt-language-server-1.34.0-202404031240.tar.gz"
         lsp-java-vmargs '(
                           "-XX:+UnlockExperimentalVMOptions"
                           "-Xmx8G"
                           "-XX:+UseZGC"
                           "-XX:+UseStringDeduplication"
-                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.28.1-darwin-arm64/lombok/lombok-1.18.31.jar"
+                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.29.0-darwin-arm64/lombok/lombok-1.18.32.jar"
                           )
         lsp-bash-highlight-parsing-errors t)
 
