@@ -58,6 +58,8 @@
            :files ("*.el" "dist")))
 (package! dimmer)
 (package! ef-themes)
+(package! modus-themes)
+(package! catppuccin-theme)
 (package! imenu-list)
 (package! jest-test-mode
   :recipe (:host github
@@ -65,7 +67,6 @@
 (package! k8s-mode)
 (package! kubel)
 (package! magit-delta)
-(package! modus-themes)
 (package! ob-http)
 (package! mermaid-mode)
 (package! ob-mermaid)
@@ -89,5 +90,12 @@
             :repo "merrickluo/lsp-tailwindcss"))
 (package! lsp-ltex)
 (package! ellama)
+(package! sql-bigquery
    :recipe (:host github
-            :repo "jdtsmith/ultra-scroll-mac"))
+            :repo "regadas/sql-bigquery"))
+(package! treesit-auto)
+(package! svg-tag-mode)
+(package! ox-gfm)
+(package! silicon-el
+   :recipe (:host github
+            :repo "iensu/silicon-el"))
