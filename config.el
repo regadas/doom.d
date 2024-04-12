@@ -31,9 +31,6 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'modus-operandi
-      ;; doom-font (font-spec :family "Iosevka SS09" :size 16))
-      ;; doom-font (font-spec :family "Monaspace Neon" :size 15))
-      ;; doom-font (font-spec :family "JetBrains Mono" :size 15))
       doom-font (font-spec :family "Comic Code Ligatures" :size 14))
 
 (setq undo-limit 80000000                         ; Raise undo-limit to 80Mb
