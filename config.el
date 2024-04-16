@@ -33,6 +33,12 @@
 (setq doom-theme 'modus-operandi
       doom-font (font-spec :family "Comic Code Ligatures" :size 14))
 
+(after! modus-themes
+  (setq modus-themes-italic-constructs t
+        modus-themes-bold-constructs t
+        modus-themes-variable-pitch-ui t
+        modus-themes-mixed-fonts t))
+
 (setq undo-limit 80000000                         ; Raise undo-limit to 80Mb
       evil-want-fine-undo t                       ; By default while in insert all changes are one big blob. Be more granular
       auto-save-default t                         ; Nobody likes to loose work, I certainly don't
