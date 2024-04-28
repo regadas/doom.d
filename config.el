@@ -218,7 +218,7 @@
         lsp-log-io nil
         lsp-auto-guess-root t
         lsp-enable-file-watchers nil
-        lsp-idle-delay 0.01
+        lsp-idle-delay 0.1
 
         lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.34.0/jdt-language-server-1.34.0-202404031240.tar.gz"
         lsp-java-vmargs '(
