@@ -152,6 +152,7 @@
        (nix +tree-sitter +lsp)               ; I hereby declare "nix geht mehr!"
        (ocaml +lsp +tree-sitter)             ; an objective camel
        (org
+        +pandoc
         +jupyter
         +pretty
         +roam2
