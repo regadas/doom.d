@@ -5,7 +5,7 @@
 
 ;; (add-hook 'doom-after-init-hook (lambda () (tool-bar-mode 1) (tool-bar-mode 0)))
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
-(add-to-list 'default-frame-alist '(undecorated-round . t))
+;; (add-to-list 'default-frame-alist '(undecorated-round . t))
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
@@ -308,4 +308,8 @@
   (setq d2-output-format ".png"))
 
 (use-package! silicon)
+
+(use-package! gptel
+  :config
+  (setq gptel-model "gpt-4o"))
 
