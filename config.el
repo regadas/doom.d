@@ -223,9 +223,10 @@
         lsp-java-maven-download-sources t
         lsp-java-completion-guess-method-arguments t
         lsp-java-vmargs '(
+                          "-noverify"
                           "-XX:+UnlockExperimentalVMOptions"
                           "-Xmx8G"
-                          "-XX:+UseZGC"
+                          "-XX:+UseG1GC"
                           "-XX:+UseStringDeduplication"
                           "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.31.0-darwin-arm64/lombok/lombok-1.18.32.jar"
                           )
