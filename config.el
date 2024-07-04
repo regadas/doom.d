@@ -31,7 +31,7 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'modus-operandi
-      doom-font (font-spec :family "Comic Code Ligatures" :size 14))
+      doom-font (font-spec :family "JetBrains Mono" :size 15))
 
 (after! modus-themes
   (setq modus-themes-italic-constructs t
