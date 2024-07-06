@@ -101,3 +101,6 @@
             :repo "iensu/silicon-el"))
 (unpin! lsp-mode)
 (unpin! lsp-java)
+(package! ready-player
+  :recipe (:host github
+           :repo "xenodium/ready-player"))

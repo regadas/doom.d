@@ -314,3 +314,7 @@
   :config
   (setq gptel-model "gpt-4o"))
 
+
+(use-package! ready-player
+  :config
+  (ready-player-add-to-auto-mode-alist))
