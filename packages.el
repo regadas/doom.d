@@ -95,9 +95,6 @@
 (package! treesit-auto)
 (package! svg-tag-mode)
 (package! ox-gfm)
-(package! silicon-el
-   :recipe (:host github
-            :repo "iensu/silicon-el"))
 (unpin! lsp-mode)
 (unpin! lsp-java)
 (package! ready-player

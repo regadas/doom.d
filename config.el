@@ -304,7 +304,6 @@
   :config
   (setq d2-output-format ".png"))
 
-(use-package! silicon)
 
 (use-package! gptel
   :config
