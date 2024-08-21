@@ -66,7 +66,6 @@
            :repo "regadas/jest-test-mode"))
 (package! k8s-mode)
 (package! kubel)
-(package! magit-delta)
 (package! ob-http)
 (package! mermaid-mode)
 (package! ob-mermaid)
