@@ -84,9 +84,6 @@
 (package! sqlformat)
 (package! eglot-java)
 (package! gptel)
-(package! lsp-tailwindcss
-   :recipe (:host github
-            :repo "merrickluo/lsp-tailwindcss"))
 (package! lsp-ltex)
 (package! ellama)
 (package! sql-bigquery

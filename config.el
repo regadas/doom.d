@@ -255,10 +255,6 @@
       'tab-width
     (funcall orig-fn mode)))
 
-(use-package! lsp-tailwindcss
-  :init
-  (setq lsp-tailwindcss-add-on-mode t))
-
 ;; (use-package! astro-ts-mode)
 ;;   ;; NOTE Run this on a new machine or if it errors
 ;;   ;; :init
