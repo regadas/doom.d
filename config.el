@@ -218,14 +218,16 @@
         lsp-idle-delay 0.5
 
         lsp-java-maven-download-sources t
-        lsp-java-completion-guess-method-arguments t
+        lsp-java-completion-guess-method-arguments nil
+        lsp-java-compile-null-analysis-mode "automatic"
         lsp-java-vmargs '(
-                          "-XX:+UnlockExperimentalVMOptions"
                           "-Xmx8G"
-                          "-XX:+UseG1GC"
+                          "-XX:+UseZGC"
                           "-XX:+UseStringDeduplication"
-                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.32.0-darwin-arm64/lombok/lombok-1.18.33.jar"
+                          "-Dlog.level=ERROR"
+                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.33.0-darwin-arm64/lombok/lombok-1.18.33.jar"
                           )
+        lsp-java-jdt-download-url "http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz"
         lsp-bash-highlight-parsing-errors t)
 
   (with-eval-after-load 'lsp-rust
