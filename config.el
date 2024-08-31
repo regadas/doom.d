@@ -249,12 +249,6 @@
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 
-(defadvice! +lsp--fix-indent-width-in-web-mode-a (orig-fn mode)
-  :around #'lsp--get-indent-width
-  (if (provided-mode-derived-p mode 'web-mode)
-      'tab-width
-    (funcall orig-fn mode)))
-
 ;; (use-package! astro-ts-mode)
 ;;   ;; NOTE Run this on a new machine or if it errors
 ;;   ;; :init
