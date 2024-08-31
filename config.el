@@ -249,16 +249,6 @@
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 
-;; (use-package! astro-ts-mode)
-;;   ;; NOTE Run this on a new machine or if it errors
-;;   ;; :init
-;;   ;; (mapc #'treesit-install-language-grammar '(astro css tsx))
-;;   :config
-;;   (setq treesit-language-source-alist
-;;         '((astro "https://github.com/virchau13/tree-sitter-astro")
-;;           (css "https://github.com/tree-sitter/tree-sitter-css")
-;;           (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))))
-
 ;; (use-package! treesit-auto
 ;;   :config
 ;;   (let ((astro-recipe (make-treesit-auto-recipe
