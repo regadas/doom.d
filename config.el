@@ -74,9 +74,6 @@
 (setq evil-split-window-below t
       evil-vsplit-window-right t)
 
-;;;; Which key
-(setq which-key-idle-delay 0.3)
-
 (after! dap-mode
   (setq dap-java--var-format "\"$%s\""))
 
