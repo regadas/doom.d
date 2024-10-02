@@ -163,6 +163,9 @@
   :config
   (add-to-list 'warning-suppress-types '(copilot)))
 
+(use-package! sql-bigquery
+  :after ob-sql-mode)
+
 (use-package! ob-sql-mode
   :after org)
 
