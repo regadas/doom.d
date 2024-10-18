@@ -271,7 +271,6 @@
   (setq treemacs-collapse-dirs 20))
 
 (after! doom-modeline
-  (nyan-mode t)
   (setq doom-modeline-major-mode-icon t))
 
 (use-package! d2-mode

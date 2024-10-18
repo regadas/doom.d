@@ -49,7 +49,6 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
 
-(package! nyan-mode)
 (package! bazel)
 (package! copilot
   :pin "581cadd6f4229223fd5c57984f9595aeb86c84f7"
