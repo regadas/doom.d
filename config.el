@@ -37,7 +37,9 @@
   (setq modus-themes-italic-constructs t
         modus-themes-bold-constructs t
         modus-themes-variable-pitch-ui t
-        modus-themes-mixed-fonts t))
+        modus-themes-mixed-fonts t
+        modus-themes-fringes 'subtle
+        modus-themes-prompts '(extrabold italic)))
 
 (setq undo-limit 80000000                         ; Raise undo-limit to 80Mb
       evil-want-fine-undo t                       ; By default while in insert all changes are one big blob. Be more granular
