@@ -220,7 +220,8 @@
                           "-XX:+UseStringDeduplication"
                           "-Dlog.level=ERROR"
                           )
-        lsp-java-jdt-download-url "http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz"
+        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.32.0/jdt-language-server-1.32.0-202402011424.tar.gz"
+        lsp-java-jdt-ls-prefer-native-command t
         lsp-bash-highlight-parsing-errors t)
 
   (with-eval-after-load 'lsp-rust
