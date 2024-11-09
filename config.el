@@ -215,11 +215,10 @@
         lsp-java-completion-guess-method-arguments nil
         lsp-java-compile-null-analysis-mode "automatic"
         lsp-java-vmargs '(
-                          "-Xmx1G"
+                          "-Xmx4G"
                           "-XX:+UseZGC"
                           "-XX:+UseStringDeduplication"
                           "-Dlog.level=ERROR"
-                          "-javaagent:/Users/regadas/.vscode/extensions/redhat.java-1.34.0-darwin-arm64/lombok/lombok-1.18.33.jar"
                           )
         lsp-java-jdt-download-url "http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz"
         lsp-bash-highlight-parsing-errors t)
