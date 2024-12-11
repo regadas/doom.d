@@ -150,7 +150,7 @@
        (markdown +grip)          ; writing docs for people to ignore
        ;;nim               ; python + lisp at the speed of c
        (nix +tree-sitter +lsp)               ; I hereby declare "nix geht mehr!"
-       (ocaml +lsp +tree-sitter)             ; an objective camel
+       ;; (ocaml +lsp +tree-sitter)             ; an objective camel
        (org
         +pandoc
         +jupyter
