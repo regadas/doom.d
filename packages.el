@@ -67,7 +67,9 @@
 (package! ob-http)
 (package! mermaid-mode)
 (package! ob-mermaid)
-(package! ob-sql-mode)
+(package! ob-sql-mode
+  :recipe (:host github
+           :repo "regadas/ob-sql-mode"))
 (package! protobuf-mode)
 (package! org-cv
   :recipe (:host gitlab
