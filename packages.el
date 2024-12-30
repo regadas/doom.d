@@ -68,6 +68,7 @@
 (package! mermaid-mode)
 (package! ob-mermaid)
 (package! ob-sql-mode)
+(package! protobuf-mode)
 (package! org-cv
   :recipe (:host gitlab
            :repo "Titan-C/org-cv"))
