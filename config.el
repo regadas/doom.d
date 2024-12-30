@@ -214,13 +214,17 @@
         lsp-java-maven-download-sources t
         lsp-java-completion-guess-method-arguments nil
         lsp-java-compile-null-analysis-mode "automatic"
+        lsp-java-server-config-dir "/Users/regadas/.emacs.d/.local/etc/java-config"
         lsp-java-vmargs '(
-                          "-Xmx4G"
+                          "-Xmx16G"
                           "-XX:+UseZGC"
                           "-XX:+UseStringDeduplication"
                           "-Dlog.level=ERROR"
+                          "-Djava.import.generatesMetadataFilesAtProjectRoot=false"
+                          "-Dosgi.checkConfiguration=true"
+                          "-Dosgi.sharedConfiguration.area=/Users/regadas/.emacs.d/.local/etc/lsp/eclipse.jdt.ls/config_mac"
                           )
-        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.32.0/jdt-language-server-1.32.0-202402011424.tar.gz"
+        lsp-java-jdt-download-url "http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz"
         lsp-java-jdt-ls-prefer-native-command t
         lsp-bash-highlight-parsing-errors t)
 
