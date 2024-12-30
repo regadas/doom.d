@@ -258,13 +258,13 @@
 ;;     (add-to-list 'treesit-auto-recipe-list astro-recipe))
 ;;   (global-treesit-auto-mode))
 
-(use-package! ellama
-  :init
-  (setopt ellama-language "English")
-  (require 'llm-ollama)
-  (setopt ellama-provider
-          (make-llm-ollama
-           :chat-model "codellama:7b-instruct" :embedding-model "codellama:7b-instruct")))
+;; (use-package! ellama
+;;   :init
+;;   (setopt ellama-language "English")
+;;   (require 'llm-ollama)
+;;   (setopt ellama-provider
+;;           (make-llm-ollama
+;;            :chat-model "codellama:7b-instruct" :embedding-model "codellama:7b-instruct")))
 
 (after! dired
   (setq delete-by-moving-to-trash t
