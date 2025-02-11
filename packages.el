@@ -95,3 +95,4 @@
 (package! ox-gfm)
 (unpin! lsp-mode)
 (unpin! lsp-java)
+(unpin! magit)
