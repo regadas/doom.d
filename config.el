@@ -215,6 +215,7 @@
         lsp-auto-guess-root t
         lsp-enable-file-watchers nil
         lsp-idle-delay 0.5
+        lsp-response-timeout 1
 
         lsp-java-maven-download-sources t
         lsp-java-completion-guess-method-arguments nil
