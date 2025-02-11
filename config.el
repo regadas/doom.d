@@ -68,7 +68,8 @@
 
 (after! vterm
   (setq vterm-max-scrollback 6000
-        vterm-timer-delay 0.0))
+        vterm-timer-delay 0.0)
+  (define-key vterm-mode-map [deletechar] #'vterm-send-delete))
 
 ;; highlight undoed text
 (use-package! undo-hl
