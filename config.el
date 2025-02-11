@@ -57,6 +57,10 @@
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type 'relative)
 
+(after! magit
+  (setq magit-diff-refine-hunk t
+        magit-format-file-function #'magit-format-file-nerd-icons))
+
 (use-package! zoom
   ;; :hook (doom-first-input . zoom-mode)
   :config
