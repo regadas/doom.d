@@ -42,6 +42,7 @@
         modus-themes-prompts '(extrabold italic)))
 
 (setq undo-limit 80000000                         ; Raise undo-limit to 80Mb
+      inhibit-compacting-font-caches t            ; When there are lots of glyphs, keep them in memory
       evil-want-fine-undo t                       ; By default while in insert all changes are one big blob. Be more granular
       auto-save-default t                         ; Nobody likes to loose work, I certainly don't
       truncate-string-ellipsis "…"               ; Unicode ellispis are nicer than "...", and also save /precious/ space
