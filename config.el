@@ -68,8 +68,8 @@
   (setq zoom-size '(0.678 . 0.678)))
 
 (after! vterm
-  (setq vterm-max-scrollback 6000
-        vterm-timer-delay 0.0)
+  (setq vterm-max-scrollback 1000
+        vterm-timer-delay 0.03)
   (define-key vterm-mode-map [deletechar] #'vterm-send-delete))
 
 ;; highlight undoed text
