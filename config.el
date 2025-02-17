@@ -63,7 +63,7 @@
         magit-format-file-function #'magit-format-file-nerd-icons))
 
 (use-package! zoom
-  ;; :hook (doom-first-input . zoom-mode)
+  :hook (doom-first-input . zoom-mode)
   :config
   (setq zoom-size '(0.678 . 0.678)))
 
