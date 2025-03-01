@@ -70,6 +70,9 @@
   :config
   (setq zoom-size '(0.678 . 0.678)))
 
+(after! embark
+  (set-popup-rule! "^\\*Embark Export" :ignore t))
+
 (after! vterm
   (setq vterm-max-scrollback 1000
         vterm-timer-delay 0.03)
