@@ -33,6 +33,9 @@
 (setq doom-theme 'modus-operandi
       doom-font (font-spec :family "TX-02" :size 15))
 
+(setq mouse-wheel-flip-direction t
+      mouse-wheel-tilt-scroll t)
+
 (after! modus-themes
   (setq modus-themes-italic-constructs t
         modus-themes-bold-constructs t
