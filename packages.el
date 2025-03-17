@@ -96,3 +96,6 @@
 (unpin! lsp-mode)
 (unpin! lsp-java)
 (unpin! magit)
+(package! ultra-scroll
+  :recipe (:host github
+           :repo "jdtsmith/ultra-scroll"))

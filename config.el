@@ -53,6 +53,18 @@
       ;; scroll-preserve-screen-position 'always  ; Don't have `point' jump around
       scroll-margin 2)                            ; It's nice to maintain a little margin
 
+;; better pixel scrolling with ultra-scroll
+(use-package! ultra-scroll
+  :custom
+  (auto-hscroll-mode t)
+  (scroll-margin 0)
+  (scroll-conservatively 101)
+  (scroll-down-aggressively nil)
+  (scroll-up-aggressively nil)
+  (scroll-step 0)
+  :config
+  (ultra-scroll-mode 1))
+
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/projects/brain-dump")
