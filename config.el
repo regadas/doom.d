@@ -272,17 +272,6 @@
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 
-;; (use-package! treesit-auto
-;;   :config
-;;   (let ((astro-recipe (make-treesit-auto-recipe
-;;                        :lang 'astro
-;;                        :ts-mode 'astro-ts-mode
-;;                        :url "https://github.com/virchau13/tree-sitter-astro"
-;;                        :revision "master"
-;;                        :source-dir "src")))
-;;     (add-to-list 'treesit-auto-recipe-list astro-recipe))
-;;   (global-treesit-auto-mode))
-
 ;; (use-package! ellama
 ;;   :init
 ;;   (setopt ellama-language "English")

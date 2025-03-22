@@ -90,7 +90,6 @@
 (package! sql-bigquery
    :recipe (:host github
             :repo "regadas/sql-bigquery"))
-(package! treesit-auto)
 (package! svg-tag-mode)
 (package! ox-gfm)
 (unpin! lsp-mode)
