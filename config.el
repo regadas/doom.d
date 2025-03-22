@@ -296,6 +296,11 @@
         dired-listing-switches "-lat")  ; sort by date
   (add-hook! 'dired-mode-hook #'dired-hide-details-mode))
 
+(after! treemacs
+  (treemacs-project-follow-mode t)
+  (treemacs-git-mode 'deferred)
+  (setq treemacs-collapse-dirs 20))
+
 (after! doom-modeline
   (setq doom-modeline-major-mode-icon t))
 
