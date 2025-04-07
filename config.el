@@ -59,8 +59,6 @@
   (auto-hscroll-mode t)
   (scroll-margin 0)
   (scroll-conservatively 101)
-  (scroll-down-aggressively nil)
-  (scroll-up-aggressively nil)
   (scroll-step 0)
   :config
   (ultra-scroll-mode 1))
