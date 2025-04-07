@@ -249,6 +249,17 @@
                           )
         lsp-java-jdt-download-url "http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz"
         lsp-java-jdt-ls-prefer-native-command t
+        lsp-java-jdt-ls-android-support-enabled nil
+
+        ;; Performance optimizations for Java
+        lsp-java-autobuild-enabled nil         ;; disable auto-build for better performance
+        lsp-java-completion-max-results 20     ;; limit completion results 
+        lsp-java-folding-range-enabled nil     ;; disable code folding calculation
+        lsp-java-import-gradle-enabled t
+        lsp-java-selection-enabled nil         ;; disable selection ranges
+        lsp-java-trace-server "off"            ;; disable server tracing
+        lsp-java-references-code-lens-enabled nil ;; disable references code lens
+        
         lsp-bash-highlight-parsing-errors t)
 
   (with-eval-after-load 'lsp-rust
