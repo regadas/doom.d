@@ -53,12 +53,9 @@
 (package! copilot
   :recipe (:host github
            :repo "copilot-emacs/copilot.el"
-           :files ("*.el" "dist")))
-(package! dimmer)
+           :files ("*.el")))
 (package! ef-themes)
 (package! modus-themes)
-(package! catppuccin-theme)
-(package! imenu-list)
 (package! jest-test-mode
   :recipe (:host github
            :repo "regadas/jest-test-mode"))
@@ -83,18 +80,17 @@
 (package! zoom)
 (package! d2-mode)
 (package! sqlformat)
-(package! eglot-java)
-(package! gptel)
-(package! lsp-ltex)
-(package! ellama)
 (package! sql-bigquery
-   :recipe (:host github
-            :repo "regadas/sql-bigquery"))
+  :recipe (:host github
+           :repo "regadas/sql-bigquery"))
 (package! svg-tag-mode)
 (package! ox-gfm)
 (unpin! lsp-mode)
 (unpin! lsp-java)
 (unpin! magit)
-(package! ultra-scroll
+(unpin! transient)
+(unpin! forge)
+(unpin! ghub)
+(package! claude-code-ide
   :recipe (:host github
-           :repo "jdtsmith/ultra-scroll"))
+           :repo "manzaltu/claude-code-ide.el"))

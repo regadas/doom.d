@@ -31,7 +31,8 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'modus-operandi
-      doom-font (font-spec :family "TX-02" :size 15))
+      ;; doom-font (font-spec :family "TX-02" :size 16))
+      doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 15))
 
 (setq mouse-wheel-flip-direction t
       mouse-wheel-tilt-scroll t)
@@ -44,24 +45,10 @@
         modus-themes-fringes 'subtle
         modus-themes-prompts '(extrabold italic)))
 
-(setq undo-limit 80000000                         ; Raise undo-limit to 80Mb
-      inhibit-compacting-font-caches t            ; When there are lots of glyphs, keep them in memory
-      evil-want-fine-undo t                       ; By default while in insert all changes are one big blob. Be more granular
+(setq inhibit-compacting-font-caches t            ; When there are lots of glyphs, keep them in memory
       auto-save-default t                         ; Nobody likes to loose work, I certainly don't
       truncate-string-ellipsis "…"               ; Unicode ellispis are nicer than "...", and also save /precious/ space
-      password-cache-expiry nil                   ; I can trust my computers ... can't I?
-      ;; scroll-preserve-screen-position 'always  ; Don't have `point' jump around
-      scroll-margin 2)                            ; It's nice to maintain a little margin
-
-;; better pixel scrolling with ultra-scroll
-(use-package! ultra-scroll
-  :custom
-  (auto-hscroll-mode t)
-  (scroll-margin 0)
-  (scroll-conservatively 101)
-  (scroll-step 0)
-  :config
-  (ultra-scroll-mode 1))
+      password-cache-expiry nil)                   ; I can trust my computers ... can't I?
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -69,7 +56,7 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type 'relative)
+(setq display-line-numbers-type nil)
 
 (after! magit
   (setq magit-diff-refine-hunk t
@@ -84,14 +71,14 @@
   (set-popup-rule! "^\\*Embark Export" :ignore t))
 
 (after! vterm
-  (setq vterm-max-scrollback 1000
+  (setq vterm-max-scrollback 10000
         vterm-timer-delay 0.03)
   (define-key vterm-mode-map [deletechar] #'vterm-send-delete))
 
 ;; highlight undoed text
-(use-package! undo-hl
-  :hook ((text-mode . undo-hl-mode)
-         (prog-mode . undo-hl-mode)))
+;; (use-package! undo-hl
+;;   :hook ((text-mode . undo-hl-mode)
+;;          (prog-mode . undo-hl-mode)))
 
 ;;; :editor evil
 ;; Focus new window after splitting
@@ -128,17 +115,14 @@
 (after! projectile
   (setq projectile-project-search-path '("~/projects/" "~/projects/spotify" "~/projects/experiments")
         projectile-project-root-files-bottom-up '(".projectile" ".git")
-        projectile-enable-caching nil))
+        projectile-enable-caching t))
 
-(setq-default TeX-engine 'xetex
-              pdf-latex-command "xelatex")
+;; (setq-default TeX-engine 'xetex
+;;               pdf-latex-command "xelatex")
 
 (after! browse-at-remote
   (add-to-list 'browse-at-remote-remote-type-regexps
                '(:host "^ghe\\.spotify\\.net$" :type "github") 'append))
-
-(setq-hook! 'typescript-mode-hook +format-with-lsp nil)
-(setq-hook! 'typescript-tsx-mode-hook +format-with-lsp nil)
 
 (use-package! ox-awesomecv
   :after org)
@@ -166,26 +150,6 @@
         "ff" #'dhall-freeze-buffer
         "fa" #'dhall-freeze-all-buffer
         "t" #'dhall-buffer-type-show))
-
-(use-package! dimmer
-  ;; :hook (prog-mode . dimmer-mode)
-  :config
-  (dimmer-configure-company-box)
-  (dimmer-configure-org)
-  (dimmer-configure-magit)
-  (dimmer-configure-which-key)
-  (setq dimmer-fraction 0.3))
-
-;; copilot.el
-(use-package! copilot
-  :hook ((prog-mode yaml-mode text-mode) . copilot-mode)
-  :bind (:map copilot-completion-map
-              ("<tab>" . 'copilot-accept-completion)
-              ("TAB" . 'copilot-accept-completion)
-              ("C-TAB" . 'copilot-accept-completion-by-word)
-              ("C-<tab>" . 'copilot-accept-completion-by-word))
-  :config
-  (add-to-list 'warning-suppress-types '(copilot)))
 
 (use-package! sql-bigquery
   :after ob-sql-mode)
@@ -215,7 +179,7 @@
     '("sql-formatter")
     :modes '(sql-mode)))
 
-(add-to-list 'auto-mode-alist '("\\.d2\\'" . d2-mode))
+;; (add-to-list 'auto-mode-alist '("\\.d2\\'" . d2-mode))
 (after! d2-mode
   (reformatter-define d2-format
     :program "d2"
@@ -227,67 +191,72 @@
 (after! lsp-mode
   ;; Disable invasive lsp-mode features
   (setq lsp-lens-enable nil
+        ;; lsp-copilot-enabled t
         lsp-use-plists t
         lsp-log-io nil
         lsp-auto-guess-root t
         lsp-enable-file-watchers nil
-        lsp-idle-delay 0.5
-        lsp-response-timeout 1
+        lsp-idle-delay 0.25                      ;; Increased from 0.25 for better performance
+        lsp-response-timeout 10
+        lsp-headerline-breadcrumb-enable nil    ;; Disable breadcrumbs (heavy UI)
+        lsp-headerline-breadcrumb-segments nil  ;; Completely disable breadcrumb segments
+        lsp-enable-symbol-highlighting t      ;; Disable symbol highlighting (heavy)
+        lsp-enable-on-type-formatting nil       ;; Disable real-time formatting
+        lsp-enable-folding nil                  ;; Disable code folding
+        lsp-semantic-tokens-enable nil          ;; Disable semantic tokens (very heavy)
+        lsp-enable-text-document-color nil      ;; Disable color decorations
+        lsp-enable-links nil                     ;; Disable link navigation
+        lsp-eldoc-enable-hover nil              ;; Disable eldoc hover
+        lsp-signature-render-documentation nil  ;; Don't render docs in signature
+        ;; lsp-completion-provider :none
+        lsp-keep-workspace-alive nil
 
+        lsp-java-completion-max-results 20
         lsp-java-maven-download-sources t
-        lsp-java-completion-guess-method-arguments nil
+        ;; lsp-java-completion-guess-method-arguments nil
         lsp-java-compile-null-analysis-mode "automatic"
-        lsp-java-server-config-dir "/Users/regadas/.emacs.d/.local/etc/java-config"
         lsp-java-vmargs '(
                           "-Xmx16G"
-                          "-XX:+UseZGC"
-                          "-XX:+UseStringDeduplication"
-                          "-Dlog.level=ERROR"
-                          "-Djava.import.generatesMetadataFilesAtProjectRoot=false"
-                          "-Dosgi.checkConfiguration=true"
-                          "-Dosgi.sharedConfiguration.area=/Users/regadas/.emacs.d/.local/etc/lsp/eclipse.jdt.ls/config_mac"
+                          "-XX:+UseParallelGC"
+                          "-XX:GCTimeRatio=4"
+                          "-XX:AdaptiveSizePolicyWeight=90"
+                          "-Dsun.zip.disableMemoryMapping=true"
+                          "-Xlog:disable"
                           )
-        lsp-java-jdt-download-url "http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz"
-        lsp-java-jdt-ls-prefer-native-command t
+        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.48.0/jdt-language-server-1.48.0-202506271502.tar.gz"
         lsp-java-jdt-ls-android-support-enabled nil
 
         ;; Performance optimizations for Java
-        lsp-java-autobuild-enabled nil         ;; disable auto-build for better performance
-        lsp-java-completion-max-results 20     ;; limit completion results 
-        lsp-java-folding-range-enabled nil     ;; disable code folding calculation
+        lsp-java-autobuild-enabled t         ;; disable auto-build for better performance
+        ;; lsp-java-folding-range-enabled nil     ;; disable code folding calculation
         lsp-java-import-gradle-enabled t
-        lsp-java-selection-enabled nil         ;; disable selection ranges
+        ;; lsp-java-selection-enabled nil         ;; disable selection ranges
         lsp-java-trace-server "off"            ;; disable server tracing
         lsp-java-references-code-lens-enabled nil ;; disable references code lens
+        lsp-java-format-enabled nil            ;; disable formatting if using external formatter
+        lsp-java-signature-help-enabled nil    ;; disable signature help popup
+
+        lsp-java-progress-reports-enabled nil
+        lsp-ui-sideline-enable nil
+        lsp-modeline-diagnostics-enable nil
+        lsp-modeline-code-actions-enable nil
+        lsp-modeline-workspace-status-enable nil
+
+        lsp-bash-highlight-parsing-errors t
+        lsp-signature-auto-activate nil
         
-        lsp-bash-highlight-parsing-errors t)
+        ;; Additional performance optimizations
+        lsp-enable-imenu nil                    ;; Use native imenu instead
+        lsp-enable-indentation nil               ;; Use Emacs indentation
 
-  (with-eval-after-load 'lsp-rust
-    (require 'dap-cpptools))
+        ;; UI optimizations
+        lsp-progress-via-spinner nil            ;; Disable progress spinner
+        lsp-eldoc-render-all nil))              ;; Don't render all eldoc
 
-  (lsp-register-custom-settings
-   '(("gopls.completeUnimported" t t)
-     ("gopls.staticcheck" t t))))
-
-(after! lsp-ui
-  (setq lsp-ui-doc-enable nil))     ; redundant with K
-
-(after! go-mode
-  (if (modulep! +lsp)
-      (add-hook 'go-mode-hook #'lsp-deferred)
-    (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)))
-
-(defun lsp-go-install-save-hooks ()
-  (add-hook 'before-save-hook #'lsp-format-buffer t t)
-  (add-hook 'before-save-hook #'lsp-organize-imports t t))
-
-;; (use-package! ellama
-;;   :init
-;;   (setopt ellama-language "English")
-;;   (require 'llm-ollama)
-;;   (setopt ellama-provider
-;;           (make-llm-ollama
-;;            :chat-model "codellama:7b-instruct" :embedding-model "codellama:7b-instruct")))
+(after! java-mode
+  (setq c-basic-offset 4
+        tab-width 4
+        indent-tabs-mode nil))
 
 (after! dired
   (setq delete-by-moving-to-trash t
@@ -295,9 +264,15 @@
   (add-hook! 'dired-mode-hook #'dired-hide-details-mode))
 
 (after! treemacs
-  (treemacs-project-follow-mode t)
+  (treemacs-project-follow-mode nil)
   (treemacs-git-mode 'deferred)
-  (setq treemacs-collapse-dirs 20))
+  (setq treemacs-collapse-dirs 10
+        treemacs-silent-refresh t
+        treemacs-silent-filewatch t
+        treemacs-file-event-delay 5000
+        treemacs-file-follow-delay 0.2
+        treemacs-indentation 1
+        treemacs-git-integration t))
 
 (after! doom-modeline
   (setq doom-modeline-major-mode-icon t))
@@ -306,7 +281,37 @@
   :config
   (setq d2-output-format ".png"))
 
-
-(use-package! gptel
+;; accept completion from copilot and fallback to company
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("<tab>" . 'copilot-accept-completion)
+              ("TAB" . 'copilot-accept-completion)
+              ("C-TAB" . 'copilot-accept-completion-by-word)
+              ("C-<tab>" . 'copilot-accept-completion-by-word))
   :config
-  (setq gptel-model "gpt-4o"))
+  (setq! copilot-idle-delay 1))
+
+(use-package! claude-code-ide
+  :config
+  (claude-code-ide-emacs-tools-setup)
+  
+  ;; Claude Code IDE key bindings under SPC o c (open > claude)
+  (map! :leader
+        :prefix ("o c" . "claude")
+        :desc "Start Claude session" "c" #'claude-code-ide
+        :desc "Continue conversation" "C" #'claude-code-ide-continue
+        :desc "Resume session" "r" #'claude-code-ide-resume
+        :desc "Stop Claude session" "q" #'claude-code-ide-stop
+        :desc "Switch to Claude buffer" "b" #'claude-code-ide-switch-to-buffer
+        :desc "List all sessions" "l" #'claude-code-ide-list-sessions
+        :desc "Toggle Claude window" "t" #'claude-code-ide-toggle
+        :desc "Send selection to Claude" "s" #'claude-code-ide-insert-at-mentioned
+        :desc "Send prompt from minibuffer" "p" #'claude-code-ide-send-prompt
+        :desc "Insert newline in Claude" "n" #'claude-code-ide-insert-newline
+        :desc "Send escape key" "e" #'claude-code-ide-send-escape
+        :desc "Main menu (transient)" "m" #'claude-code-ide-menu
+        :desc "Check CLI status" "?" #'claude-code-ide-check-status
+        :desc "Show debug buffer" "d" #'claude-code-ide-show-debug
+        :desc "Clear debug buffer" "D" #'claude-code-ide-clear-debug))
+
