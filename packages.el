@@ -50,28 +50,27 @@
 ;(unpin! t)
 
 (package! bazel)
-(package! copilot
-  :recipe (:host github
-           :repo "copilot-emacs/copilot.el"
-           :files ("*.el")))
+;; (package! copilot
+;;   :recipe (:host github
+;;            :repo "copilot-emacs/copilot.el"
+;;            :files ("*.el")))
 (package! ef-themes)
 (package! modus-themes)
-(package! jest-test-mode
-  :recipe (:host github
-           :repo "regadas/jest-test-mode"))
+;; (package! jest-test-mode
+;;   :recipe (:host github
+;;            :repo "regadas/jest-test-mode"))
 (package! k8s-mode)
 (package! kubel)
 (package! ob-http)
 (package! mermaid-mode)
 (package! ob-mermaid)
-(package! ob-sql-mode
-  :recipe (:host github
-           :repo "regadas/ob-sql-mode"))
+;; (package! ob-sql-mode
+;;   :recipe (:host github
+;;            :repo "regadas/ob-sql-mode"))
 (package! protobuf-mode)
 (package! org-cv
   :recipe (:host gitlab
            :repo "Titan-C/org-cv"))
-(package! protobuf-mode)
 (package! sql-trino)
 (package! undo-hl
   :recipe (:host github
@@ -79,18 +78,16 @@
 (package! counsel-jq)
 (package! zoom)
 (package! d2-mode)
-(package! sqlformat)
-(package! sql-bigquery
-  :recipe (:host github
-           :repo "regadas/sql-bigquery"))
-(package! svg-tag-mode)
+;; (package! sqlformat)
+;; (package! sql-bigquery
+;;   :recipe (:host github
+;;            :repo "regadas/sql-bigquery"))
 (package! ox-gfm)
-(unpin! lsp-mode)
-(unpin! lsp-java)
-(unpin! magit)
-(unpin! transient)
-(unpin! forge)
-(unpin! ghub)
 (package! claude-code-ide
   :recipe (:host github
            :repo "manzaltu/claude-code-ide.el"))
+(package! vterm-anti-flicker-filter
+  :recipe (:host github
+           :repo "martinbaillie/vterm-anti-flicker-filter"))
+(unpin! magit)
+(unpin! transient)

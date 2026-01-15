@@ -3,8 +3,25 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
+;;; Garbage Collection Optimizations
+;; Increase GC threshold during startup for faster load times
+;; (setq gc-cons-threshold most-positive-fixnum
+;;       gc-cons-percentage 0.6)
+
+;; ;; After startup, restore reasonable GC threshold
+;; (add-hook! 'doom-after-init-hook
+;;   (defun +gc-restore-h ()
+;;     (setq gc-cons-threshold (* 100 1024 1024)      ; 16MB
+;;           gc-cons-percentage 0.1)))
+
+;; ;; Run GC when idle for 5 seconds
+;; (run-with-idle-timer 5 t #'garbage-collect)
+
+;; ;; GC when focus is lost (minify pause during work)
+;; (add-function :after after-focus-change-function #'garbage-collect)
+
 ;; (add-hook 'doom-after-init-hook (lambda () (tool-bar-mode 1) (tool-bar-mode 0)))
-(add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
+;; (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 ;; (add-to-list 'default-frame-alist '(undecorated-round . t))
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
@@ -32,7 +49,7 @@
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'modus-operandi
       ;; doom-font (font-spec :family "TX-02" :size 16))
-      doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 15))
+      doom-font (font-spec :family "Iosevka" :size 16))
 
 (setq mouse-wheel-flip-direction t
       mouse-wheel-tilt-scroll t)
@@ -46,9 +63,9 @@
         modus-themes-prompts '(extrabold italic)))
 
 (setq inhibit-compacting-font-caches t            ; When there are lots of glyphs, keep them in memory
-      auto-save-default t                         ; Nobody likes to loose work, I certainly don't
-      truncate-string-ellipsis "…"               ; Unicode ellispis are nicer than "...", and also save /precious/ space
-      password-cache-expiry nil)                   ; I can trust my computers ... can't I?
+      auto-save-default t)                         ; Nobody likes to loose work, I certainly don't
+                                        ;truncate-string-ellipsis "…"               ; Unicode ellispis are nicer than "...", and also save /precious/ space
+                                        ;password-cache-expiry nil)                   ; I can trust my computers ... can't I?
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -56,11 +73,11 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type nil)
+(setq display-line-numbers-type 'relative)
 
-(after! magit
-  (setq magit-diff-refine-hunk t
-        magit-format-file-function #'magit-format-file-nerd-icons))
+;; (after! magit
+;;   (setq magit-diff-refine-hunk t
+;;         magit-format-file-function #'magit-format-file-nerd-icons))
 
 (use-package! zoom
   ;; :hook (doom-first-input . zoom-mode)
@@ -151,32 +168,31 @@
         "fa" #'dhall-freeze-all-buffer
         "t" #'dhall-buffer-type-show))
 
-(use-package! sql-bigquery
-  :after ob-sql-mode)
+;; (use-package! sql-bigquery
+;;   :after ob-sql-mode)
 
-(use-package! ob-sql-mode
-  :after org)
+;; (use-package! ob-sql-mode
+;; :after org)
 
-(use-package! jest-test-mode
-  :commands jest-test-mode
-  :hook (typescript-mode js-mode typescript-tsx-mode))
+;; (use-package! jest-test-mode
+;;   :commands jest-test-mode
+;;   :hook (typescript-mode js-mode typescript-tsx-mode))
 
-(map! :after jest-test-mode
-      :map jest-test-mode-map
-      :localleader
-      :prefix "t"
-      "a" #'jest-test-run
-      "t" #'jest-test-run-at-point)
+;; (map! :after jest-test-mode
+;;       :map jest-test-mode-map
+;;       :localleader
+;;       :prefix "t"
+;;       "a" #'jest-test-run
+;;       "t" #'jest-test-run-at-point)
 
 (use-package! kubel
   :after (vterm)
   :config (kubel-vterm-setup))
 
 (after! sql
-  ;; set formatter to sql-formatter
-  (set-formatter!
-    'sql-formatter
-    '("sql-formatter")
+  ;; Configure sqlfluff formatter for SQL (BigQuery dialect)
+  (set-formatter! 'sqlfluff
+    '("sqlfluff" "format" "-")
     :modes '(sql-mode)))
 
 ;; (add-to-list 'auto-mode-alist '("\\.d2\\'" . d2-mode))
@@ -191,7 +207,7 @@
 (after! lsp-mode
   ;; Disable invasive lsp-mode features
   (setq lsp-lens-enable nil
-        ;; lsp-copilot-enabled t
+        lsp-copilot-enabled t
         lsp-use-plists t
         lsp-log-io nil
         lsp-auto-guess-root t
@@ -199,7 +215,6 @@
         lsp-idle-delay 0.25                      ;; Increased from 0.25 for better performance
         lsp-response-timeout 10
         lsp-headerline-breadcrumb-enable nil    ;; Disable breadcrumbs (heavy UI)
-        lsp-headerline-breadcrumb-segments nil  ;; Completely disable breadcrumb segments
         lsp-enable-symbol-highlighting t      ;; Disable symbol highlighting (heavy)
         lsp-enable-on-type-formatting nil       ;; Disable real-time formatting
         lsp-enable-folding nil                  ;; Disable code folding
@@ -211,19 +226,20 @@
         ;; lsp-completion-provider :none
         lsp-keep-workspace-alive nil
 
-        lsp-java-completion-max-results 20
+        lsp-java-completion-max-results 30
         lsp-java-maven-download-sources t
         ;; lsp-java-completion-guess-method-arguments nil
-        lsp-java-compile-null-analysis-mode "automatic"
+        ;; lsp-java-compile-null-analysis-mode "automatic"
         lsp-java-vmargs '(
-                          "-Xmx16G"
+                          "-Xms1G"
+                          "-Xmx8G"
                           "-XX:+UseParallelGC"
                           "-XX:GCTimeRatio=4"
                           "-XX:AdaptiveSizePolicyWeight=90"
                           "-Dsun.zip.disableMemoryMapping=true"
                           "-Xlog:disable"
                           )
-        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.48.0/jdt-language-server-1.48.0-202506271502.tar.gz"
+        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.51.0/jdt-language-server-1.51.0-202510022025.tar.gz"
         lsp-java-jdt-ls-android-support-enabled nil
 
         ;; Performance optimizations for Java
@@ -235,6 +251,10 @@
         lsp-java-references-code-lens-enabled nil ;; disable references code lens
         lsp-java-format-enabled nil            ;; disable formatting if using external formatter
         lsp-java-signature-help-enabled nil    ;; disable signature help popup
+
+        lsp-completion-show-detail t               ;; Hide completion details
+        lsp-completion-show-kind t                ;; Hide completion kind icons
+        lsp-completion-enable-additional-text-edit nil  ;; Faster completion
 
         lsp-java-progress-reports-enabled nil
         lsp-ui-sideline-enable nil
@@ -282,20 +302,22 @@
   (setq d2-output-format ".png"))
 
 ;; accept completion from copilot and fallback to company
-(use-package! copilot
-  :hook (prog-mode . copilot-mode)
-  :bind (:map copilot-completion-map
-              ("<tab>" . 'copilot-accept-completion)
-              ("TAB" . 'copilot-accept-completion)
-              ("C-TAB" . 'copilot-accept-completion-by-word)
-              ("C-<tab>" . 'copilot-accept-completion-by-word))
-  :config
-  (setq! copilot-idle-delay 1))
+;; (use-package! copilot
+;;   :hook (prog-mode . copilot-mode)
+;;   :bind (:map copilot-completion-map
+;;               ("<tab>" . 'copilot-accept-completion)
+;;               ("TAB" . 'copilot-accept-completion)
+;;               ("C-TAB" . 'copilot-accept-completion-by-word)
+;;               ("C-<tab>" . 'copilot-accept-completion-by-word))
+;;   :config
+;;   (setq! copilot-idle-delay 1))
 
 (use-package! claude-code-ide
   :config
   (claude-code-ide-emacs-tools-setup)
-  
+
+  ;; (setq claude-code-ide-window-side 'bottom)
+
   ;; Claude Code IDE key bindings under SPC o c (open > claude)
   (map! :leader
         :prefix ("o c" . "claude")
@@ -315,3 +337,14 @@
         :desc "Show debug buffer" "d" #'claude-code-ide-show-debug
         :desc "Clear debug buffer" "D" #'claude-code-ide-clear-debug))
 
+(use-package! vterm-anti-flicker-filter)
+
+(after! grip-mode
+  (setq grip-command 'go-grip))
+
+(after! corfu
+  (setq corfu-auto-delay 0.2))
+
+(after! diff-hl
+  (setq diff-hl-flydiff-delay 2
+        diff-hl-draw-borders nil))
