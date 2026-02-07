@@ -4,25 +4,14 @@
 ;; sync' after modifying this file!
 
 ;;; Garbage Collection Optimizations
-;; Increase GC threshold during startup for faster load times
-;; (setq gc-cons-threshold most-positive-fixnum
-;;       gc-cons-percentage 0.6)
+;; After startup, restore reasonable GC threshold
+(add-hook! 'doom-after-init-hook
+  (setq gc-cons-threshold (* 100 1024 1024)  ; 100MB
+        gc-cons-percentage 0.1))
 
-;; ;; After startup, restore reasonable GC threshold
-;; (add-hook! 'doom-after-init-hook
-;;   (defun +gc-restore-h ()
-;;     (setq gc-cons-threshold (* 100 1024 1024)      ; 16MB
-;;           gc-cons-percentage 0.1)))
-
-;; ;; Run GC when idle for 5 seconds
-;; (run-with-idle-timer 5 t #'garbage-collect)
-
-;; ;; GC when focus is lost (minify pause during work)
-;; (add-function :after after-focus-change-function #'garbage-collect)
-
-;; (add-hook 'doom-after-init-hook (lambda () (tool-bar-mode 1) (tool-bar-mode 0)))
-;; (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
-;; (add-to-list 'default-frame-alist '(undecorated-round . t))
+;; GC when Emacs loses focus
+(add-function :after after-focus-change-function
+  (lambda () (unless (frame-focus-state) (garbage-collect))))
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
@@ -31,25 +20,8 @@
 
 (setq auth-sources '("~/.authinfo.gpg"))
 
-;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
-;; are the three important ones:
-;;
-;; + `doom-font'
-;; + `doom-variable-pitch-font'
-;; + `doom-big-font' -- used for `doom-big-font-mode'; use this for
-;;   presentations or streaming.
-;;
-;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
-;; font string. You generally only need these two:
-;; (setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
-;;       doom-variable-pitch-font (font-spec :family "sans" :size 13))
-
-;; There are two ways to load a theme. Both assume the theme is installed and
-;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
 (setq doom-theme 'modus-operandi
-      ;; doom-font (font-spec :family "TX-02" :size 16))
-      doom-font (font-spec :family "Iosevka" :size 16))
+      doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 15))
 
 (setq mouse-wheel-flip-direction t
       mouse-wheel-tilt-scroll t)
@@ -62,10 +34,10 @@
         modus-themes-fringes 'subtle
         modus-themes-prompts '(extrabold italic)))
 
-(setq inhibit-compacting-font-caches t            ; When there are lots of glyphs, keep them in memory
-      auto-save-default t)                         ; Nobody likes to loose work, I certainly don't
-                                        ;truncate-string-ellipsis "…"               ; Unicode ellispis are nicer than "...", and also save /precious/ space
-                                        ;password-cache-expiry nil)                   ; I can trust my computers ... can't I?
+(setq inhibit-compacting-font-caches t
+      auto-save-default t
+      idle-update-delay 1.0
+      jit-lock-defer-time 0.05)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -75,12 +47,7 @@
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type 'relative)
 
-;; (after! magit
-;;   (setq magit-diff-refine-hunk t
-;;         magit-format-file-function #'magit-format-file-nerd-icons))
-
 (use-package! zoom
-  ;; :hook (doom-first-input . zoom-mode)
   :config
   (setq zoom-size '(0.678 . 0.678)))
 
@@ -88,14 +55,9 @@
   (set-popup-rule! "^\\*Embark Export" :ignore t))
 
 (after! vterm
-  (setq vterm-max-scrollback 10000
+  (setq vterm-max-scrollback 5000
         vterm-timer-delay 0.03)
   (define-key vterm-mode-map [deletechar] #'vterm-send-delete))
-
-;; highlight undoed text
-;; (use-package! undo-hl
-;;   :hook ((text-mode . undo-hl-mode)
-;;          (prog-mode . undo-hl-mode)))
 
 ;;; :editor evil
 ;; Focus new window after splitting
@@ -104,23 +66,6 @@
 
 (after! dap-mode
   (setq dap-java--var-format "\"$%s\""))
-
-;; Here are some additional functions/macros that could help you configure Doom:
-;;
-;; - `load!' for loading external *.el files relative to this one
-;; - `use-package!' for configuring packages
-;; - `after!' for running code after a package has loaded
-;; - `add-load-path!' for adding directories to the `load-path', relative to
-;;   this file. Emacs searches the `load-path' when you load packages with
-;;   `require' or `use-package'.
-;; - `map!' for binding new keys
-;;
-;; To get information about any of these functions/macros, move the cursor over
-;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
-;; This will open documentation for it, including demos of how they are used.
-;;
-;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
-;; they are implemented.
 
 (map! (:when (modulep! :tools lookup)
         :nv "gh"   #'+lookup/documentation
@@ -133,9 +78,6 @@
   (setq projectile-project-search-path '("~/projects/" "~/projects/spotify" "~/projects/experiments")
         projectile-project-root-files-bottom-up '(".projectile" ".git")
         projectile-enable-caching t))
-
-;; (setq-default TeX-engine 'xetex
-;;               pdf-latex-command "xelatex")
 
 (after! browse-at-remote
   (add-to-list 'browse-at-remote-remote-type-regexps
@@ -168,25 +110,9 @@
         "fa" #'dhall-freeze-all-buffer
         "t" #'dhall-buffer-type-show))
 
-;; (use-package! sql-bigquery
-;;   :after ob-sql-mode)
-
-;; (use-package! ob-sql-mode
-;; :after org)
-
-;; (use-package! jest-test-mode
-;;   :commands jest-test-mode
-;;   :hook (typescript-mode js-mode typescript-tsx-mode))
-
-;; (map! :after jest-test-mode
-;;       :map jest-test-mode-map
-;;       :localleader
-;;       :prefix "t"
-;;       "a" #'jest-test-run
-;;       "t" #'jest-test-run-at-point)
-
 (use-package! kubel
-  :after (vterm)
+  :defer t
+  :commands (kubel)
   :config (kubel-vterm-setup))
 
 (after! sql
@@ -195,7 +121,6 @@
     '("sqlfluff" "format" "-")
     :modes '(sql-mode)))
 
-;; (add-to-list 'auto-mode-alist '("\\.d2\\'" . d2-mode))
 (after! d2-mode
   (reformatter-define d2-format
     :program "d2"
@@ -205,73 +130,63 @@
     :lighter " D2Fmt"))
 
 (after! lsp-mode
-  ;; Disable invasive lsp-mode features
+  ;; Performance: disable heavy features
   (setq lsp-lens-enable nil
-        lsp-copilot-enabled t
+        lsp-headerline-breadcrumb-enable nil
+        lsp-semantic-tokens-enable nil
+        lsp-enable-folding nil
+        lsp-enable-links nil
+        lsp-enable-file-watchers nil
+        lsp-enable-on-type-formatting nil
+        lsp-enable-imenu nil
+        lsp-enable-indentation nil
+        lsp-eldoc-enable-hover nil
+        lsp-eldoc-render-all nil
+        lsp-signature-auto-activate nil
+        lsp-progress-via-spinner nil
+        lsp-modeline-diagnostics-enable nil
+        lsp-modeline-code-actions-enable nil
+        lsp-modeline-workspace-status-enable nil
+        lsp-ui-sideline-enable nil
+
+        ;; Keep enabled (lightweight and useful)
+        lsp-enable-symbol-highlighting t
+        lsp-completion-show-detail t
+        lsp-completion-show-kind t
+
+        ;; Core settings
         lsp-use-plists t
         lsp-log-io nil
         lsp-auto-guess-root t
-        lsp-enable-file-watchers nil
-        lsp-idle-delay 0.25                      ;; Increased from 0.25 for better performance
+        lsp-idle-delay 0.25
         lsp-response-timeout 10
-        lsp-headerline-breadcrumb-enable nil    ;; Disable breadcrumbs (heavy UI)
-        lsp-enable-symbol-highlighting t      ;; Disable symbol highlighting (heavy)
-        lsp-enable-on-type-formatting nil       ;; Disable real-time formatting
-        lsp-enable-folding nil                  ;; Disable code folding
-        lsp-semantic-tokens-enable nil          ;; Disable semantic tokens (very heavy)
-        lsp-enable-text-document-color nil      ;; Disable color decorations
-        lsp-enable-links nil                     ;; Disable link navigation
-        lsp-eldoc-enable-hover nil              ;; Disable eldoc hover
-        lsp-signature-render-documentation nil  ;; Don't render docs in signature
-        ;; lsp-completion-provider :none
         lsp-keep-workspace-alive nil
+        lsp-copilot-enabled nil
+        lsp-completion-enable-additional-text-edit nil
+        lsp-bash-highlight-parsing-errors t
 
-        lsp-java-completion-max-results 30
-        lsp-java-maven-download-sources t
-        ;; lsp-java-completion-guess-method-arguments nil
-        ;; lsp-java-compile-null-analysis-mode "automatic"
-        lsp-java-vmargs '(
-                          "-Xms1G"
+        ;; Typescript LSP
+        lsp-clients-typescript-max-ts-server-memory 8192
+
+        ;; Java LSP
+        lsp-java-vmargs '("-Xms1G"
                           "-Xmx8G"
                           "-XX:+UseParallelGC"
                           "-XX:GCTimeRatio=4"
                           "-XX:AdaptiveSizePolicyWeight=90"
                           "-Dsun.zip.disableMemoryMapping=true"
-                          "-Xlog:disable"
-                          )
+                          "-Xlog:disable")
         lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.51.0/jdt-language-server-1.51.0-202510022025.tar.gz"
         lsp-java-jdt-ls-android-support-enabled nil
-
-        ;; Performance optimizations for Java
-        lsp-java-autobuild-enabled t         ;; disable auto-build for better performance
-        ;; lsp-java-folding-range-enabled nil     ;; disable code folding calculation
+        lsp-java-completion-max-results 30
+        lsp-java-maven-download-sources t
         lsp-java-import-gradle-enabled t
-        ;; lsp-java-selection-enabled nil         ;; disable selection ranges
-        lsp-java-trace-server "off"            ;; disable server tracing
-        lsp-java-references-code-lens-enabled nil ;; disable references code lens
-        lsp-java-format-enabled nil            ;; disable formatting if using external formatter
-        lsp-java-signature-help-enabled nil    ;; disable signature help popup
-
-        lsp-completion-show-detail t               ;; Hide completion details
-        lsp-completion-show-kind t                ;; Hide completion kind icons
-        lsp-completion-enable-additional-text-edit nil  ;; Faster completion
-
-        lsp-java-progress-reports-enabled nil
-        lsp-ui-sideline-enable nil
-        lsp-modeline-diagnostics-enable nil
-        lsp-modeline-code-actions-enable nil
-        lsp-modeline-workspace-status-enable nil
-
-        lsp-bash-highlight-parsing-errors t
-        lsp-signature-auto-activate nil
-        
-        ;; Additional performance optimizations
-        lsp-enable-imenu nil                    ;; Use native imenu instead
-        lsp-enable-indentation nil               ;; Use Emacs indentation
-
-        ;; UI optimizations
-        lsp-progress-via-spinner nil            ;; Disable progress spinner
-        lsp-eldoc-render-all nil))              ;; Don't render all eldoc
+        lsp-java-autobuild-enabled t
+        lsp-java-trace-server "off"
+        lsp-java-references-code-lens-enabled nil
+        lsp-java-format-enabled nil
+        lsp-java-signature-help-enabled nil
+        lsp-java-progress-reports-enabled nil))
 
 (after! java-mode
   (setq c-basic-offset 4
@@ -289,10 +204,9 @@
   (setq treemacs-collapse-dirs 10
         treemacs-silent-refresh t
         treemacs-silent-filewatch t
-        treemacs-file-event-delay 5000
+        treemacs-file-event-delay 2000
         treemacs-file-follow-delay 0.2
-        treemacs-indentation 1
-        treemacs-git-integration t))
+        treemacs-indentation 1))
 
 (after! doom-modeline
   (setq doom-modeline-major-mode-icon t))
@@ -301,24 +215,21 @@
   :config
   (setq d2-output-format ".png"))
 
-;; accept completion from copilot and fallback to company
-;; (use-package! copilot
-;;   :hook (prog-mode . copilot-mode)
-;;   :bind (:map copilot-completion-map
-;;               ("<tab>" . 'copilot-accept-completion)
-;;               ("TAB" . 'copilot-accept-completion)
-;;               ("C-TAB" . 'copilot-accept-completion-by-word)
-;;               ("C-<tab>" . 'copilot-accept-completion-by-word))
-;;   :config
-;;   (setq! copilot-idle-delay 1))
+;; accept completion from copilot and fallback to corfu
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("<tab>" . copilot-accept-completion)
+              ("TAB" . copilot-accept-completion)
+              ("C-<tab>" . copilot-accept-completion-by-word))
+  :config
+  (setq copilot-idle-delay 0.5))
 
 (use-package! claude-code-ide
   :config
   (claude-code-ide-emacs-tools-setup)
-
-  ;; (setq claude-code-ide-window-side 'bottom)
-
-  ;; Claude Code IDE key bindings under SPC o c (open > claude)
+  (setq claude-code-ide-use-side-window t
+        claude-code-ide-terminal-backend 'vterm)
   (map! :leader
         :prefix ("o c" . "claude")
         :desc "Start Claude session" "c" #'claude-code-ide
@@ -337,14 +248,26 @@
         :desc "Show debug buffer" "d" #'claude-code-ide-show-debug
         :desc "Clear debug buffer" "D" #'claude-code-ide-clear-debug))
 
-(use-package! vterm-anti-flicker-filter)
+;; (use-package! vterm-anti-flicker-filter)
+;; (after! claude-code-ide
+;;   (setq claude-code-ide-vterm-anti-flicker t
+;;         claude-code-ide-vterm-render-delay 0))
+
+(defvar +grip-active-buffer nil
+  "Buffer with active grip preview.")
 
 (after! grip-mode
-  (setq grip-command 'go-grip))
+  (setq grip-command 'mdopen))
 
 (after! corfu
-  (setq corfu-auto-delay 0.2))
+  (setq corfu-auto-delay 0.3))
 
 (after! diff-hl
   (setq diff-hl-flydiff-delay 2
         diff-hl-draw-borders nil))
+
+(after! markdown-xwidget
+  (setq markdown-xwidget-command nil
+      markdown-xwidget-github-theme "light"
+      markdown-xwidget-mermaid-theme "default"
+      markdown-xwidget-code-block-theme "default"))
