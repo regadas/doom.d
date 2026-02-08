@@ -284,6 +284,18 @@
   (setq diff-hl-flydiff-delay 2
         diff-hl-draw-borders nil))
 
+(defun +link-hint-open-link-choose ()
+  "Select a link with link-hint, then choose to open in webkit or browser."
+  (interactive)
+  (link-hint-copy-link)
+  (let ((url (current-kill 0)))
+    (pcase (read-char-choice (format "[w]ebkit [b]rowser: ") '(?w ?b))
+      (?w (xwidget-webkit-browse-url url))
+      (?b (browse-url url)))))
+
+(map! :leader
+      :desc "Open link" "s l" #'+link-hint-open-link-choose)
+
 (after! markdown-xwidget
   (setq markdown-xwidget-command nil
       markdown-xwidget-github-theme "light"
