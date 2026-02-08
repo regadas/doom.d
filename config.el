@@ -301,3 +301,43 @@
       markdown-xwidget-github-theme "light"
       markdown-xwidget-mermaid-theme "default"
       markdown-xwidget-code-block-theme "default"))
+
+;;; Magit worktree → workspace + project integration
+(after! (:and magit persp-mode)
+  (defun +my/worktree-setup ()
+    "Add worktree as a known project, create a workspace, and switch to it."
+    (let ((dir (directory-file-name default-directory))
+          (name (file-name-nondirectory (directory-file-name default-directory))))
+      (projectile-add-known-project dir)
+      (if (+workspace-exists-p name)
+          (+workspace-switch name)
+        (+workspace-switch name t))
+      (projectile-switch-project-by-name dir)))
+
+  (defun +my/worktree-teardown (worktree &rest _)
+    "Remove worktree project and workspace."
+    (let* ((dir (directory-file-name worktree))
+           (name (file-name-nondirectory dir)))
+      (projectile-remove-known-project dir)
+      (when (+workspace-exists-p name)
+        (+workspace-delete name))))
+
+  (defadvice! +my/worktree-checkout-a (&rest _)
+    "Set up workspace and project after `magit-worktree-checkout'."
+    :after #'magit-worktree-checkout
+    (+my/worktree-setup))
+
+  (defadvice! +my/worktree-branch-a (&rest _)
+    "Set up workspace and project after `magit-worktree-branch'."
+    :after #'magit-worktree-branch
+    (+my/worktree-setup))
+
+  (defadvice! +my/worktree-status-a (&rest _)
+    "Set up workspace and project after `magit-worktree-status'."
+    :after #'magit-worktree-status
+    (+my/worktree-setup))
+
+  (defadvice! +my/worktree-delete-a (worktree &rest _)
+    "Clean up workspace and project after `magit-worktree-delete'."
+    :after #'magit-worktree-delete
+    (+my/worktree-teardown worktree)))
