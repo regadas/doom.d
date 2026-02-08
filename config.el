@@ -21,7 +21,7 @@
 (setq auth-sources '("~/.authinfo.gpg"))
 
 (setq doom-theme 'modus-operandi
-      doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 15))
+      doom-font (font-spec :family "Iosevka Nerd Font" :size 16))
 
 (setq mouse-wheel-flip-direction t
       mouse-wheel-tilt-scroll t)
