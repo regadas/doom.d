@@ -188,6 +188,24 @@
         lsp-java-signature-help-enabled nil
         lsp-java-progress-reports-enabled nil))
 
+;; Per-project jdtls workspace directories to allow multiple instances.
+;; Disable multi-root so lsp-mode starts a separate jdtls per project root,
+;; and give each instance its own -data dir to avoid lock conflicts.
+(after! lsp-java
+  (setf (cl-struct-slot-value 'lsp--client 'multi-root
+                              (gethash 'jdtls lsp-clients))
+        nil)
+
+  (add-hook 'java-mode-hook
+            (defun my/lsp-java-set-workspace-dir ()
+              "Set a per-project jdtls workspace directory."
+              (setq-local lsp-java-workspace-dir
+                          (let* ((root (or (projectile-project-root) default-directory))
+                                 (hash (md5 root)))
+                            (expand-file-name hash
+                                              (expand-file-name "jdtls-workspaces"
+                                                                lsp-server-install-dir)))))))
+
 (after! java-mode
   (setq c-basic-offset 4
         tab-width 4
