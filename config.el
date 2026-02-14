@@ -271,11 +271,12 @@
 ;;   (setq claude-code-ide-vterm-anti-flicker t
 ;;         claude-code-ide-vterm-render-delay 0))
 
-(defvar +grip-active-buffer nil
-  "Buffer with active grip preview.")
-
 (after! grip-mode
-  (setq grip-command 'mdopen))
+  (setq grip-command 'mdopen)
+
+  (map! :map markdown-mode-map
+        :localleader
+        "p" #'grip-browse-preview))
 
 (after! corfu
   (setq corfu-auto-delay 0.3))
