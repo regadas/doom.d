@@ -296,12 +296,6 @@
 (map! :leader
       :desc "Open link" "s l" #'+link-hint-open-link-choose)
 
-(after! markdown-xwidget
-  (setq markdown-xwidget-command nil
-      markdown-xwidget-github-theme "light"
-      markdown-xwidget-mermaid-theme "default"
-      markdown-xwidget-code-block-theme "default"))
-
 ;;; Magit worktree → workspace + project integration
 (after! (:and magit persp-mode)
   (defun +my/worktree-setup ()
