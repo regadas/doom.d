@@ -20,7 +20,7 @@
 
 (setq auth-sources '("~/.authinfo.gpg"))
 
-(setq doom-theme 'modus-operandi
+(setq doom-theme 'modus-vivendi-tinted
       doom-font (font-spec :family "Iosevka Nerd Font" :size 16))
 
 (setq mouse-wheel-flip-direction t
