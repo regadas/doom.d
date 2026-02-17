@@ -247,7 +247,7 @@
   :config
   (claude-code-ide-emacs-tools-setup)
   (setq claude-code-ide-use-side-window t
-        claude-code-ide-window-width 0.3
+        claude-code-ide-window-width 120
         claude-code-ide-terminal-backend 'vterm)
   (map! :leader
         :prefix ("o c" . "claude")
