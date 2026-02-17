@@ -20,7 +20,7 @@
 
 (setq auth-sources '("~/.authinfo.gpg"))
 
-(setq doom-theme 'modus-vivendi-tinted
+(setq doom-theme 'modus-operandi
       doom-font (font-spec :family "Iosevka Nerd Font" :size 16))
 
 (setq mouse-wheel-flip-direction t
@@ -247,6 +247,7 @@
   :config
   (claude-code-ide-emacs-tools-setup)
   (setq claude-code-ide-use-side-window t
+        claude-code-ide-window-width 0.3
         claude-code-ide-terminal-backend 'vterm)
   (map! :leader
         :prefix ("o c" . "claude")
