@@ -1,20 +1,15 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-;; Place your private configuration here! Remember, you do not need to run 'doom
-;; sync' after modifying this file!
+;;; Core -----------------------------------------------------------------------
 
-;;; Garbage Collection Optimizations
-;; After startup, restore reasonable GC threshold
+;; Garbage Collection Optimizations
 (add-hook! 'doom-after-init-hook
   (setq gc-cons-threshold (* 100 1024 1024)  ; 100MB
         gc-cons-percentage 0.1))
 
-;; GC when Emacs loses focus
 (add-function :after after-focus-change-function
   (lambda () (unless (frame-focus-state) (garbage-collect))))
 
-;; Some functionality uses this to identify you, e.g. GPG configuration, email
-;; clients, file templates and snippets.
 (setq user-full-name "Filipe Regadas"
       user-mail-address "oss@regadas.email")
 
@@ -39,13 +34,18 @@
       idle-update-delay 1.0
       jit-lock-defer-time 0.05)
 
-;; If you use `org' and don't want your org files in the default location below,
-;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/projects/brain-dump")
-
-;; This determines the style of line numbers in effect. If set to `nil', line
-;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type 'relative)
+
+;;; Editor / UI ----------------------------------------------------------------
+
+(setq evil-split-window-below t
+      evil-vsplit-window-right t)
+
+(after! evil
+  (setq-default evil-escape-key-sequence "jj"))
+
+(map! (:when (modulep! :tools lookup)
+        :nv "gh"   #'+lookup/documentation))
 
 (use-package! zoom
   :config
@@ -54,25 +54,32 @@
 (after! embark
   (set-popup-rule! "^\\*Embark Export" :ignore t))
 
-(after! vterm
-  (setq vterm-max-scrollback 5000
-        vterm-timer-delay 0.03)
-  (define-key vterm-mode-map [deletechar] #'vterm-send-delete))
+(after! dired
+  (setq delete-by-moving-to-trash t
+        dired-listing-switches "-lat")  ; sort by date
+  (add-hook! 'dired-mode-hook #'dired-hide-details-mode))
 
-;;; :editor evil
-;; Focus new window after splitting
-(setq evil-split-window-below t
-      evil-vsplit-window-right t)
+(after! treemacs
+  (treemacs-project-follow-mode nil)
+  (treemacs-git-mode 'deferred)
+  (setq treemacs-collapse-dirs 10
+        treemacs-silent-refresh t
+        treemacs-silent-filewatch t
+        treemacs-file-event-delay 2000
+        treemacs-file-follow-delay 0.2
+        treemacs-indentation 1))
 
-(after! dap-mode
-  (setq dap-java--var-format "\"$%s\""))
+(after! doom-modeline
+  (setq doom-modeline-major-mode-icon t))
 
-(map! (:when (modulep! :tools lookup)
-        :nv "gh"   #'+lookup/documentation
-        ))
+(after! corfu
+  (setq corfu-auto-delay 0.3))
 
-(after! evil
-  (setq-default evil-escape-key-sequence "jj"))
+(after! diff-hl
+  (setq diff-hl-flydiff-delay 2
+        diff-hl-draw-borders nil))
+
+;;; Projects / VCS -------------------------------------------------------------
 
 (after! projectile
   (setq projectile-project-search-path '("~/projects/" "~/projects/spotify" "~/projects/experiments")
@@ -87,70 +94,47 @@
   (push '("ghe.spotify.net" "ghe.spotify.net/api/v3" "ghe.spotify.net" forge-github-repository)
         forge-alist))
 
-(use-package! ox-awesomecv
-  :after org)
+;;; Magit worktree → workspace + project integration
+(after! (:and magit persp-mode)
+  (defun +my/worktree-setup ()
+    "Add worktree as a known project, create a workspace, and switch to it."
+    (let ((dir (directory-file-name default-directory))
+          (name (file-name-nondirectory (directory-file-name default-directory))))
+      (projectile-add-known-project dir)
+      (if (+workspace-exists-p name)
+          (+workspace-switch name)
+        (+workspace-switch name t))
+      (projectile-switch-project-by-name dir)))
 
-(after! org
-  (setq org-latex-compiler "xelatex"))
+  (defun +my/worktree-teardown (worktree &rest _)
+    "Remove worktree project and workspace."
+    (let* ((dir (directory-file-name worktree))
+           (name (file-name-nondirectory dir)))
+      (projectile-remove-known-project dir)
+      (when (+workspace-exists-p name)
+        (+workspace-delete name))))
 
-;;; Avro
-;; .avsc (schema) and .avpr (protocol) are JSON
-(add-to-list 'auto-mode-alist '("\\.avsc\\'" . json-mode))
-(add-to-list 'auto-mode-alist '("\\.avpr\\'" . json-mode))
+  (defadvice! +my/worktree-checkout-a (&rest _)
+    "Set up workspace and project after `magit-worktree-checkout'."
+    :after #'magit-worktree-checkout
+    (+my/worktree-setup))
 
-;; Avro IDL
-(define-generic-mode 'avro-idl-mode
-  '("//" ("/*" . "*/"))
-  '("protocol" "record" "error" "enum" "union" "fixed" "import" "idl" "schema"
-    "null" "void" "boolean" "int" "long" "float" "double" "bytes" "string"
-    "array" "map" "throws" "oneway" "namespace" "order" "aliases" "doc"
-    "date" "time_ms" "timestamp_ms" "decimal" "uuid")
-  '(("@[A-Za-z_][A-Za-z0-9_]*" . font-lock-preprocessor-face)
-    ("`[^`]+`" . font-lock-variable-name-face)
-    ("\\b[A-Z][A-Za-z0-9_]*\\b" . font-lock-type-face))
-  '("\\.avdl\\'")
-  nil
-  "Major mode for Apache Avro IDL files.")
+  (defadvice! +my/worktree-branch-a (&rest _)
+    "Set up workspace and project after `magit-worktree-branch'."
+    :after #'magit-worktree-branch
+    (+my/worktree-setup))
 
-(after! bazel
-  (setq bazel-buildifier-before-save t))
+  (defadvice! +my/worktree-status-a (&rest _)
+    "Set up workspace and project after `magit-worktree-status'."
+    :after #'magit-worktree-status
+    (+my/worktree-setup))
 
-;; dhall-mode highlight the syntax and run dhall format on save
-(use-package! dhall-mode
-  :defer t
-  :init
-  (add-hook! 'dhall-mode-local-vars-hook #'lsp! 'append)
-  :config
-  (set-repl-handler! 'dhall-mode #'dhall-repl-show)
-  (reformatter-define dhall-freeze-all
-    :program dhall-command
-    :args '("freeze" "--all")
-    :lighter " DhFreezeAll")
-  (map! :map dhall-mode-map
-        :localleader
-        "l" #'dhall-lint-buffer
-        "ff" #'dhall-freeze-buffer
-        "fa" #'dhall-freeze-all-buffer
-        "t" #'dhall-buffer-type-show))
+  (defadvice! +my/worktree-delete-a (worktree &rest _)
+    "Clean up workspace and project after `magit-worktree-delete'."
+    :after #'magit-worktree-delete
+    (+my/worktree-teardown worktree)))
 
-(use-package! kubel
-  :defer t
-  :commands (kubel)
-  :config (kubel-vterm-setup))
-
-(after! sql
-  ;; Configure sqlfluff formatter for SQL (BigQuery dialect)
-  (set-formatter! 'sqlfluff
-    '("sqlfluff" "format" "-")
-    :modes '(sql-mode)))
-
-(after! d2-mode
-  (reformatter-define d2-format
-    :program "d2"
-    :stdin nil
-    :stdout nil
-    :args (list "fmt" input-file)
-    :lighter " D2Fmt"))
+;;; LSP ------------------------------------------------------------------------
 
 (after! lsp-mode
   ;; Performance: disable heavy features
@@ -210,9 +194,9 @@
         lsp-java-signature-help-enabled nil
         lsp-java-progress-reports-enabled nil))
 
-;; Per-project jdtls workspace directories to allow multiple instances.
-;; Disable multi-root so lsp-mode starts a separate jdtls per project root,
-;; and give each instance its own -data dir to avoid lock conflicts.
+;;; Languages ------------------------------------------------------------------
+
+;; Java
 (after! lsp-java
   (setf (cl-struct-slot-value 'lsp--client 'multi-root
                               (gethash 'jdtls lsp-clients))
@@ -267,27 +251,95 @@ Use this when jdtls fails to start due to a corrupted workspace."
         tab-width 4
         indent-tabs-mode nil))
 
-(after! dired
-  (setq delete-by-moving-to-trash t
-        dired-listing-switches "-lat")  ; sort by date
-  (add-hook! 'dired-mode-hook #'dired-hide-details-mode))
+(after! dap-mode
+  (setq dap-java--var-format "\"$%s\""))
 
-(after! treemacs
-  (treemacs-project-follow-mode nil)
-  (treemacs-git-mode 'deferred)
-  (setq treemacs-collapse-dirs 10
-        treemacs-silent-refresh t
-        treemacs-silent-filewatch t
-        treemacs-file-event-delay 2000
-        treemacs-file-follow-delay 0.2
-        treemacs-indentation 1))
+;; Avro
+(add-to-list 'auto-mode-alist '("\\.avsc\\'" . json-mode))
+(add-to-list 'auto-mode-alist '("\\.avpr\\'" . json-mode))
 
-(after! doom-modeline
-  (setq doom-modeline-major-mode-icon t))
+(define-generic-mode 'avro-idl-mode
+  '("//" ("/*" . "*/"))
+  '("protocol" "record" "error" "enum" "union" "fixed" "import" "idl" "schema"
+    "null" "void" "boolean" "int" "long" "float" "double" "bytes" "string"
+    "array" "map" "throws" "oneway" "namespace" "order" "aliases" "doc"
+    "date" "time_ms" "timestamp_ms" "decimal" "uuid")
+  '(("@[A-Za-z_][A-Za-z0-9_]*" . font-lock-preprocessor-face)
+    ("`[^`]+`" . font-lock-variable-name-face)
+    ("\\b[A-Z][A-Za-z0-9_]*\\b" . font-lock-type-face))
+  '("\\.avdl\\'")
+  nil
+  "Major mode for Apache Avro IDL files.")
 
+;; Bazel
+(after! bazel
+  (setq bazel-buildifier-before-save t))
+
+;; Dhall
+(use-package! dhall-mode
+  :defer t
+  :init
+  (add-hook! 'dhall-mode-local-vars-hook #'lsp! 'append)
+  :config
+  (set-repl-handler! 'dhall-mode #'dhall-repl-show)
+  (reformatter-define dhall-freeze-all
+    :program dhall-command
+    :args '("freeze" "--all")
+    :lighter " DhFreezeAll")
+  (map! :map dhall-mode-map
+        :localleader
+        "l" #'dhall-lint-buffer
+        "ff" #'dhall-freeze-buffer
+        "fa" #'dhall-freeze-all-buffer
+        "t" #'dhall-buffer-type-show))
+
+;; SQL
+(after! sql
+  (set-formatter! 'sqlfluff
+    '("sqlfluff" "format" "-")
+    :modes '(sql-mode)))
+
+;; D2
 (use-package! d2-mode
   :config
   (setq d2-output-format ".png"))
+
+(after! d2-mode
+  (reformatter-define d2-format
+    :program "d2"
+    :stdin nil
+    :stdout nil
+    :args (list "fmt" input-file)
+    :lighter " D2Fmt"))
+
+;; Org
+(setq org-directory "~/projects/brain-dump")
+
+(use-package! ox-awesomecv
+  :after org)
+
+(after! org
+  (setq org-latex-compiler "xelatex"))
+
+;; Markdown
+(after! grip-mode
+  (setq grip-command 'mdopen)
+
+  (map! :map markdown-mode-map
+        :localleader
+        "p" #'grip-browse-preview))
+
+;;; Tools ----------------------------------------------------------------------
+
+(after! vterm
+  (setq vterm-max-scrollback 5000
+        vterm-timer-delay 0.03)
+  (define-key vterm-mode-map [deletechar] #'vterm-send-delete))
+
+(use-package! kubel
+  :defer t
+  :commands (kubel)
+  :config (kubel-vterm-setup))
 
 ;; accept completion from copilot and fallback to corfu
 (use-package! copilot
@@ -327,20 +379,6 @@ Use this when jdtls fails to start due to a corrupted workspace."
 ;;   (setq claude-code-ide-vterm-anti-flicker t
 ;;         claude-code-ide-vterm-render-delay 0))
 
-(after! grip-mode
-  (setq grip-command 'mdopen)
-
-  (map! :map markdown-mode-map
-        :localleader
-        "p" #'grip-browse-preview))
-
-(after! corfu
-  (setq corfu-auto-delay 0.3))
-
-(after! diff-hl
-  (setq diff-hl-flydiff-delay 2
-        diff-hl-draw-borders nil))
-
 (defun +link-hint-open-link-choose ()
   "Select a link with link-hint, then choose to open in webkit or browser."
   (interactive)
@@ -352,43 +390,3 @@ Use this when jdtls fails to start due to a corrupted workspace."
 
 (map! :leader
       :desc "Open link" "s l" #'+link-hint-open-link-choose)
-
-;;; Magit worktree → workspace + project integration
-(after! (:and magit persp-mode)
-  (defun +my/worktree-setup ()
-    "Add worktree as a known project, create a workspace, and switch to it."
-    (let ((dir (directory-file-name default-directory))
-          (name (file-name-nondirectory (directory-file-name default-directory))))
-      (projectile-add-known-project dir)
-      (if (+workspace-exists-p name)
-          (+workspace-switch name)
-        (+workspace-switch name t))
-      (projectile-switch-project-by-name dir)))
-
-  (defun +my/worktree-teardown (worktree &rest _)
-    "Remove worktree project and workspace."
-    (let* ((dir (directory-file-name worktree))
-           (name (file-name-nondirectory dir)))
-      (projectile-remove-known-project dir)
-      (when (+workspace-exists-p name)
-        (+workspace-delete name))))
-
-  (defadvice! +my/worktree-checkout-a (&rest _)
-    "Set up workspace and project after `magit-worktree-checkout'."
-    :after #'magit-worktree-checkout
-    (+my/worktree-setup))
-
-  (defadvice! +my/worktree-branch-a (&rest _)
-    "Set up workspace and project after `magit-worktree-branch'."
-    :after #'magit-worktree-branch
-    (+my/worktree-setup))
-
-  (defadvice! +my/worktree-status-a (&rest _)
-    "Set up workspace and project after `magit-worktree-status'."
-    :after #'magit-worktree-status
-    (+my/worktree-setup))
-
-  (defadvice! +my/worktree-delete-a (worktree &rest _)
-    "Clean up workspace and project after `magit-worktree-delete'."
-    :after #'magit-worktree-delete
-    (+my/worktree-teardown worktree)))
