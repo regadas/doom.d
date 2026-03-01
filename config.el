@@ -83,6 +83,10 @@
   (add-to-list 'browse-at-remote-remote-type-regexps
                '(:host "^ghe\\.spotify\\.net$" :type "github") 'append))
 
+(after! forge
+  (push '("ghe.spotify.net" "ghe.spotify.net/api/v3" "ghe.spotify.net" forge-github-repository)
+        forge-alist))
+
 (use-package! ox-awesomecv
   :after org)
 
@@ -156,7 +160,7 @@
 
         ;; Core settings
         lsp-use-plists t
-        lsp-log-io nil
+        ;; lsp-log-io nil
         lsp-auto-guess-root t
         lsp-idle-delay 0.25
         lsp-response-timeout 10
@@ -174,9 +178,8 @@
                           "-XX:+UseParallelGC"
                           "-XX:GCTimeRatio=4"
                           "-XX:AdaptiveSizePolicyWeight=90"
-                          "-Dsun.zip.disableMemoryMapping=true"
-                          "-Xlog:disable")
-        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.51.0/jdt-language-server-1.51.0-202510022025.tar.gz"
+                          "-Dsun.zip.disableMemoryMapping=true")
+        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.56.0/jdt-language-server-1.56.0-202601291528.tar.gz"
         lsp-java-jdt-ls-android-support-enabled nil
         lsp-java-completion-max-results 30
         lsp-java-maven-download-sources t
@@ -196,15 +199,49 @@
                               (gethash 'jdtls lsp-clients))
         nil)
 
+  (defun my/lsp-java--workspace-dir ()
+    "Return the per-project jdtls workspace directory.
+Includes the JDT LS version in the hash so upgrading the server
+automatically gets a fresh workspace instead of reusing stale metadata."
+    (let* ((root (directory-file-name
+                  (file-truename (or (projectile-project-root) default-directory))))
+           (version (and (boundp 'lsp-java-jdt-download-url)
+                         (when (string-match "/\\([0-9][0-9.]*\\)/" lsp-java-jdt-download-url)
+                           (match-string 1 lsp-java-jdt-download-url))))
+           (hash (md5 (concat root "\0" (or version "unknown")))))
+      (expand-file-name hash
+                        (expand-file-name "jdtls-workspaces"
+                                          lsp-server-install-dir))))
+
+  (defun my/lsp-java--remove-stale-lock (ws-dir)
+    "Remove a stale .metadata/.lock file in WS-DIR if no jdtls owns it."
+    (let ((lock (expand-file-name ".metadata/.lock" ws-dir)))
+      (when (and (file-exists-p lock)
+                 (not (seq-some (lambda (ws)
+                                  (string-prefix-p ws-dir (lsp--workspace-root ws)))
+                                (lsp--session-workspaces (lsp-session)))))
+        (delete-file lock)
+        (message "Removed stale lock: %s" lock))))
+
   (add-hook 'java-mode-hook
             (defun my/lsp-java-set-workspace-dir ()
               "Set a per-project jdtls workspace directory."
-              (setq-local lsp-java-workspace-dir
-                          (let* ((root (or (projectile-project-root) default-directory))
-                                 (hash (md5 root)))
-                            (expand-file-name hash
-                                              (expand-file-name "jdtls-workspaces"
-                                                                lsp-server-install-dir)))))))
+              (setq-local lsp-java-workspace-dir (my/lsp-java--workspace-dir))
+              (when (file-directory-p lsp-java-workspace-dir)
+                (my/lsp-java--remove-stale-lock lsp-java-workspace-dir))))
+
+  (defun my/lsp-java-clean-workspace ()
+    "Delete the current project's jdtls workspace and restart LSP.
+Use this when jdtls fails to start due to a corrupted workspace."
+    (interactive)
+    (let ((ws-dir (or lsp-java-workspace-dir (my/lsp-java--workspace-dir))))
+      (unless (file-directory-p ws-dir)
+        (user-error "No jdtls workspace directory found at %s" ws-dir))
+      (when (y-or-n-p (format "Delete jdtls workspace %s?" ws-dir))
+        (delete-directory ws-dir t)
+        (message "Deleted %s. Reopen a Java file to restart jdtls." ws-dir)
+        (when (bound-and-true-p lsp-mode)
+          (lsp-disconnect))))))
 
 (after! java-mode
   (setq c-basic-offset 4
@@ -247,7 +284,6 @@
   :config
   (claude-code-ide-emacs-tools-setup)
   (setq claude-code-ide-use-side-window t
-        claude-code-ide-window-width 120
         claude-code-ide-terminal-backend 'vterm)
   (map! :leader
         :prefix ("o c" . "claude")

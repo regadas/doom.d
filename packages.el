@@ -8,6 +8,7 @@
            :files ("*.el")))
 (package! ef-themes)
 (package! modus-themes)
+(package! catppuccin-theme)
 (package! k8s-mode)
 (package! kubel)
 (package! ob-http)
