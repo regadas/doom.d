@@ -34,5 +34,7 @@
   :recipe (:host github
            :repo "martinbaillie/vterm-anti-flicker-filter"))
 
+(package! consult-gh)
+
 (unpin! magit)
 (unpin! transient)

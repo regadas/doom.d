@@ -8,7 +8,7 @@
         gc-cons-percentage 0.1))
 
 (add-function :after after-focus-change-function
-  (lambda () (unless (frame-focus-state) (garbage-collect))))
+              (lambda () (unless (frame-focus-state) (garbage-collect))))
 
 (setq user-full-name "Filipe Regadas"
       user-mail-address "oss@regadas.email")
@@ -350,6 +350,12 @@ Use this when jdtls fails to start due to a corrupted workspace."
               ("C-<tab>" . copilot-accept-completion-by-word))
   :config
   (setq copilot-idle-delay 0.5))
+
+(use-package! consult-gh
+  :after consult
+  :config
+  (consult-gh-enable-default-keybindings)
+  (setq consult-gh-default-clone-directory "~/projects/"))
 
 (use-package! claude-code-ide
   :config
