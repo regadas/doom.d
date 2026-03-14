@@ -16,7 +16,7 @@
 (setq auth-sources '("~/.authinfo.gpg"))
 
 (setq doom-theme 'modus-operandi
-      doom-font (font-spec :family "Iosevka Nerd Font" :size 16))
+      doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 15))
 
 (setq mouse-wheel-flip-direction t
       mouse-wheel-tilt-scroll t)
@@ -294,6 +294,9 @@ Use this when jdtls fails to start due to a corrupted workspace."
         "t" #'dhall-buffer-type-show))
 
 ;; SQL
+(use-package! sql-bigquery
+  :after sql)
+
 (after! sql
   (set-formatter! 'sqlfluff
     '("sqlfluff" "format" "-")
@@ -322,6 +325,9 @@ Use this when jdtls fails to start due to a corrupted workspace."
   (setq org-latex-compiler "xelatex"))
 
 ;; Markdown
+(after! markdown-mode
+  (setq markdown-hide-markup t))
+
 (after! grip-mode
   (setq grip-command 'mdopen)
 
