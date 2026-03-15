@@ -38,3 +38,4 @@
 
 (unpin! magit)
 (unpin! transient)
+(unpin! lsp-mode)

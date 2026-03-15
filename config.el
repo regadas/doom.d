@@ -182,7 +182,7 @@
                           "-XX:GCTimeRatio=4"
                           "-XX:AdaptiveSizePolicyWeight=90"
                           "-Dsun.zip.disableMemoryMapping=true")
-        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.56.0/jdt-language-server-1.56.0-202601291528.tar.gz"
+        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.57.0/jdt-language-server-1.57.0-202602261110.tar.gz"
         lsp-java-jdt-ls-android-support-enabled nil
         lsp-java-completion-max-results 30
         lsp-java-maven-download-sources t
@@ -201,6 +201,16 @@
   (setf (cl-struct-slot-value 'lsp--client 'multi-root
                               (gethash 'jdtls lsp-clients))
         nil)
+
+  ;; lsp-java--get-filename can produce cache names without a .java extension
+  ;; (second regex branch), so Emacs opens them in fundamental-mode and LSP
+  ;; never attaches.  Ensure the name always ends in .java.
+  (defadvice! +lsp-java--get-filename-a (orig-fn &rest args)
+    :around #'lsp-java--get-filename
+    (let ((name (apply orig-fn args)))
+      (if (and name (not (string-suffix-p ".java" name)))
+          (concat name ".java")
+        name)))
 
   (defun my/lsp-java--workspace-dir ()
     "Return the per-project jdtls workspace directory.
@@ -226,18 +236,23 @@ automatically gets a fresh workspace instead of reusing stale metadata."
         (delete-file lock)
         (message "Removed stale lock: %s" lock))))
 
-  (add-hook 'java-mode-hook
-            (defun my/lsp-java-set-workspace-dir ()
-              "Set a per-project jdtls workspace directory."
-              (setq-local lsp-java-workspace-dir (my/lsp-java--workspace-dir))
-              (when (file-directory-p lsp-java-workspace-dir)
-                (my/lsp-java--remove-stale-lock lsp-java-workspace-dir))))
+  ;; Advise the command builder so the per-project workspace dir is used
+  ;; at server-start time, avoiding the hook-ordering issue where
+  ;; java-mode-hook fires before lsp-java is loaded.
+  (defadvice! my/lsp-java--ls-command-a (orig-fn)
+    "Bind `lsp-java-workspace-dir' to a per-project path around the
+server command construction, and remove any stale lock beforehand."
+    :around #'lsp-java--ls-command
+    (let ((lsp-java-workspace-dir (my/lsp-java--workspace-dir)))
+      (when (file-directory-p lsp-java-workspace-dir)
+        (my/lsp-java--remove-stale-lock lsp-java-workspace-dir))
+      (funcall orig-fn)))
 
   (defun my/lsp-java-clean-workspace ()
     "Delete the current project's jdtls workspace and restart LSP.
 Use this when jdtls fails to start due to a corrupted workspace."
     (interactive)
-    (let ((ws-dir (or lsp-java-workspace-dir (my/lsp-java--workspace-dir))))
+    (let ((ws-dir (my/lsp-java--workspace-dir)))
       (unless (file-directory-p ws-dir)
         (user-error "No jdtls workspace directory found at %s" ws-dir))
       (when (y-or-n-p (format "Delete jdtls workspace %s?" ws-dir))
