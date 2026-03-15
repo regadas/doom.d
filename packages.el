@@ -19,6 +19,9 @@
   :recipe (:host gitlab
            :repo "Titan-C/org-cv"))
 (package! sql-trino)
+(package! sql-bigquery
+  :recipe (:local-repo "lisp/sql-bigquery"
+           :build (:not compile)))
 (package! undo-hl
   :recipe (:host github
            :repo "casouri/undo-hl"))
