@@ -72,6 +72,12 @@
 (after! doom-modeline
   (setq doom-modeline-major-mode-icon t))
 
+(use-package! nyan-mode
+  :after doom-modeline
+  :config
+  (setq nyan-wavy-trail t)
+  (nyan-mode 1))
+
 (after! corfu
   (setq corfu-auto-delay 0.3))
 
@@ -353,8 +359,9 @@ Use this when jdtls fails to start due to a corrupted workspace."
 ;;; Tools ----------------------------------------------------------------------
 
 (after! vterm
-  (setq vterm-max-scrollback 5000
-        vterm-timer-delay 0.03)
+  (setq vterm-timer-delay 0.03
+        vterm-disable-underline t
+        vterm-disable-bold t)
   (define-key vterm-mode-map [deletechar] #'vterm-send-delete))
 
 (use-package! kubel
