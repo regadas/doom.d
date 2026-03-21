@@ -39,6 +39,8 @@
 
 (package! consult-gh)
 
+(package! nyan-mode)
+
 (unpin! magit)
 (unpin! transient)
 (unpin! lsp-mode)
