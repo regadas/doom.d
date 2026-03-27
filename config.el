@@ -16,7 +16,7 @@
 (setq auth-sources '("~/.authinfo.gpg"))
 
 (setq doom-theme 'modus-operandi
-      doom-font (font-spec :family "Iosevka SS14" :size 15))
+      doom-font (font-spec :family "Iosevka SS14" :size 16))
 
 (setq mouse-wheel-flip-direction t
       mouse-wheel-tilt-scroll t)
@@ -413,8 +413,18 @@ Use this when jdtls fails to start due to a corrupted workspace."
 ;;   (setq claude-code-ide-vterm-anti-flicker t
 ;;         claude-code-ide-vterm-render-delay 0))
 
+(use-package! agent-shell
+  :defer t
+  :commands (agent-shell
+             agent-shell-anthropic-start-claude-code
+             agent-shell-google-start-gemini)
+  :config
+  (setq agent-shell-show-welcome-message nil
+        agent-shell-preferred-agent-config 'claude-code)
+  (require 'acp))
+
 (defun +link-hint-open-link-choose ()
-  "Select a link with link-hint, then choose to open in webkit or browser."
+  "Select a link with link-hint, then choose to open in webkit or brwser."
   (interactive)
   (link-hint-copy-link)
   (let ((url (current-kill 0)))
