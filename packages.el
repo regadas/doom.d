@@ -41,6 +41,10 @@
 
 (package! nyan-mode)
 
+(package! shell-maker)
+(package! acp)
+(package! agent-shell)
+
 (unpin! magit)
 (unpin! transient)
 (unpin! lsp-mode)
