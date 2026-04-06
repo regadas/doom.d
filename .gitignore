@@ -1,0 +1,4 @@
+/.agent-shell/
+/.claude/settings.local.json
+/lisp/
+custom.el
