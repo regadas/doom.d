@@ -154,6 +154,11 @@ Parse it to extract the parent project name."
         (format "%s/%s" parent name)
       name)))
 
+(after! magit
+  (magit-add-section-hook 'magit-status-sections-hook
+                          'magit-insert-worktrees
+                          'magit-insert-status-headers t))
+
 ;;; Magit worktree → workspace + project integration
 (after! (:and magit persp-mode)
   (defun +my/worktree-setup (worktree-path)
