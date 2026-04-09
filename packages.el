@@ -22,6 +22,9 @@
 (package! sql-bigquery
   :recipe (:local-repo "lisp/sql-bigquery"
            :build (:not compile)))
+(package! pr-inbox
+  :recipe (:local-repo "lisp/pr-inbox"
+           :build (:not compile)))
 (package! undo-hl
   :recipe (:host github
            :repo "casouri/undo-hl"))
@@ -38,6 +41,7 @@
            :repo "martinbaillie/vterm-anti-flicker-filter"))
 
 (package! consult-gh)
+(package! pr-review)
 
 (package! nyan-mode)
 

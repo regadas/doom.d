@@ -399,6 +399,21 @@ Use this when jdtls fails to start due to a corrupted workspace."
         "fa" #'dhall-freeze-all-buffer
         "t" #'dhall-buffer-type-show))
 
+;; PR Review
+(use-package! pr-review
+  :commands (pr-review pr-review-open-url)
+  :config
+  (setq pr-review-ghub-host "ghe.spotify.net/api/v3"
+        ;; Use gh CLI token (classic OAuth with repo scope) — fine-grained
+        ;; tokens don't support the /compare/ endpoint on GHE 3.19.
+        pr-review-ghub-auth-name
+        (string-trim (shell-command-to-string
+                      "gh auth token --hostname ghe.spotify.net"))))
+
+;; PR Inbox
+(use-package! pr-inbox
+  :commands (pr-inbox))
+
 ;; SQL
 (use-package! sql-bigquery
   :after sql)
