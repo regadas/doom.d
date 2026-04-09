@@ -70,7 +70,14 @@
         treemacs-indentation 1))
 
 (after! doom-modeline
-  (setq doom-modeline-major-mode-icon t))
+  (setq doom-modeline-major-mode-icon t
+        doom-modeline-hud t               ; top-of-window position indicator
+        doom-modeline-buffer-encoding 'nondefault)  ; only show when non-utf-8
+
+  ;; Enable features
+  (doom-modeline-def-modeline 'main
+    '(bar modals workspace-name window-number matches buffer-info remote-host buffer-position word-count parrot selection-info)
+    '(misc-info grip github debug repl lsp minor-modes input-method indent-info buffer-encoding major-mode process vcs)))
 
 (use-package! nyan-mode
   :after doom-modeline
