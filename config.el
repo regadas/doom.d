@@ -241,11 +241,11 @@ Parse it to extract the parent project name."
               (name (plist-get info :name))
               (entry (plist-get info :project-entry)))
         (progn
+          (setq +my/--pending-teardown nil)
           (setq projectile-known-projects (delete entry projectile-known-projects))
           (projectile-save-known-projects)
           (when (+workspace-exists-p name)
-            (+workspace-delete name))
-          (setq +my/--pending-teardown nil))
+            (+workspace-delete name)))
       (message "+my/worktree-teardown: no pending teardown data")))
 
   (defadvice! +my/worktree-checkout-a (path &rest _)
