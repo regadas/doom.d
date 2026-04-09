@@ -161,10 +161,66 @@ Parse it to extract the parent project name."
         (format "%s/%s" parent name)
       name)))
 
+;; --- Monorepo performance: lightweight magit for large repos ---
+(defvar +my/magit-large-repo-dirs nil
+  "List of directory paths where magit should use lightweight settings.")
+
+(defun +my/magit-large-repo-p ()
+  "Return non-nil if `default-directory' is inside a registered large repo."
+  (and +my/magit-large-repo-dirs
+       (cl-some (lambda (dir)
+                  (file-in-directory-p
+                   (file-truename default-directory)
+                   (file-truename (expand-file-name dir))))
+                +my/magit-large-repo-dirs)))
+
+(defun +my/magit-lightweight-status-h ()
+  "Strip expensive sections in large repos."
+  (when (+my/magit-large-repo-p)
+    (setq-local magit-revision-insert-related-refs nil)
+    (setq-local magit-status-headers-hook
+                '(magit-insert-error-header
+                  magit-insert-diff-filter-header
+                  magit-insert-head-branch-header
+                  magit-insert-upstream-branch-header
+                  magit-insert-push-branch-header))
+    (setq-local magit-status-sections-hook
+                '(magit-insert-status-headers
+                  magit-insert-merge-log
+                  magit-insert-rebase-sequence
+                  magit-insert-am-sequence
+                  magit-insert-sequencer-sequence
+                  magit-insert-bisect-output
+                  magit-insert-bisect-rest
+                  magit-insert-bisect-log
+                  magit-insert-untracked-files
+                  magit-insert-unstaged-changes
+                  magit-insert-staged-changes
+                  magit-insert-stashes))))
+
 (after! magit
   (magit-add-section-hook 'magit-status-sections-hook
                           'magit-insert-worktrees
-                          'magit-insert-status-headers t))
+                          'magit-insert-status-headers t)
+
+  (add-hook 'magit-status-mode-hook #'+my/magit-lightweight-status-h)
+
+  ;; Suppress auto-refresh of status buffer from other buffers in large repos.
+  ;; magit-refresh-status-buffer is read in the calling buffer's scope, so
+  ;; setq-local in the status buffer has no effect — use advice instead.
+  (defadvice! +my/magit-maybe-skip-status-refresh-a (orig &rest args)
+    :around #'magit-refresh
+    (if (and (not (derived-mode-p 'magit-status-mode))
+             (when-let ((buf (magit-get-mode-buffer 'magit-status-mode)))
+               (with-current-buffer buf (+my/magit-large-repo-p))))
+        (let ((magit-refresh-status-buffer nil))
+          (apply orig args))
+      (apply orig args)))
+
+  (setq magit-diff-highlight-indentation nil
+        magit-diff-highlight-trailing nil
+        magit-diff-paint-whitespace nil
+        magit-diff-refine-hunk nil))
 
 ;;; Magit worktree → workspace + project integration
 (after! (:and magit persp-mode)
