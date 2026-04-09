@@ -489,7 +489,8 @@ Use this when jdtls fails to start due to a corrupted workspace."
   :config
   (claude-code-ide-emacs-tools-setup)
   (setq claude-code-ide-use-side-window t
-        claude-code-ide-terminal-backend 'vterm)
+        claude-code-ide-terminal-backend 'vterm
+        claude-code-ide-cli-extra-flags "--enable-auto-mode")
   (map! :leader
         :prefix ("o c" . "claude")
         :desc "Start Claude session" "c" #'claude-code-ide
