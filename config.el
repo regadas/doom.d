@@ -97,36 +97,7 @@
 (after! projectile
   (setq projectile-project-search-path '("~/projects/" "~/projects/spotify" "~/projects/experiments")
         projectile-project-root-files-bottom-up '(".projectile" ".git")
-        projectile-enable-caching t
-        projectile-project-name-function #'+my/project-name)
-
-  (defun +my/discover-worktrees ()
-    "Scan projects in `projectile-project-search-path' for git worktrees
-and register them as known projectile projects."
-    (interactive)
-    (dolist (search-dir projectile-project-search-path)
-      (let ((dir (file-name-as-directory (expand-file-name search-dir))))
-        (when (file-directory-p dir)
-          (dolist (entry (directory-files dir t "\\`[^.]"))
-            (when (and (file-directory-p entry)
-                       (file-exists-p (expand-file-name ".git" entry)))
-              (with-temp-buffer
-                (let ((exit-code (call-process "git" nil t nil
-                                               "-C" entry "worktree" "list" "--porcelain")))
-                  (if (zerop exit-code)
-                      (dolist (line (split-string (buffer-string) "\n"))
-                        (when (string-match "\\`worktree \\(.+\\)" line)
-                          (let ((wt-path (match-string 1 line)))
-                            (when (and (file-directory-p wt-path)
-                                       (not (equal (file-truename wt-path)
-                                                   (file-truename entry))))
-                              (projectile-add-known-project wt-path)))))
-                    (message "+my/discover-worktrees: git failed (exit %d) in %s" exit-code entry))))))))))
-
-  (defadvice! +my/discover-worktrees-a (&rest _)
-    "Also discover worktrees when discovering projects."
-    :after #'projectile-discover-projects-in-search-path
-    (+my/discover-worktrees)))
+        projectile-enable-caching t))
 
 (after! browse-at-remote
   (add-to-list 'browse-at-remote-remote-type-regexps
@@ -135,31 +106,6 @@ and register them as known projectile projects."
 (after! forge
   (push '("ghe.spotify.net" "ghe.spotify.net/api/v3" "ghe.spotify.net" forge-github-repository)
         forge-alist))
-
-;;; Worktree helpers (used by both projectile and magit integration)
-(defun +my/worktree-parent-project (dir)
-  "Return the parent project name for a worktree at DIR.
-In a worktree, .git is a file containing \"gitdir: /path/to/parent/.git/worktrees/NAME\".
-Parse it to extract the parent project name."
-  (let ((gitfile (expand-file-name ".git" dir)))
-    (when (file-regular-p gitfile)
-      (ignore-errors
-        (with-temp-buffer
-          (insert-file-contents gitfile)
-          (when (re-search-forward "gitdir: \\(.+\\)" nil t)
-            (let ((gitdir (string-trim (match-string 1))))
-              (when (string-match "/\\.git/worktrees/" gitdir)
-                (file-name-nondirectory
-                 (substring gitdir 0 (match-beginning 0)))))))))))
-
-(defun +my/project-name (project-root)
-  "Return project name for PROJECT-ROOT, prefixed with parent for worktrees."
-  (let* ((dir (directory-file-name project-root))
-         (name (file-name-nondirectory dir))
-         (parent (+my/worktree-parent-project dir)))
-    (if parent
-        (format "%s/%s" parent name)
-      name)))
 
 ;; --- Monorepo performance: lightweight magit for large repos ---
 (defvar +my/magit-large-repo-dirs nil
@@ -221,65 +167,6 @@ Parse it to extract the parent project name."
         magit-diff-highlight-trailing nil
         magit-diff-paint-whitespace nil
         magit-diff-refine-hunk nil))
-
-;;; Magit worktree → workspace + project integration
-(after! (:and magit persp-mode)
-  (defun +my/worktree-setup (worktree-path)
-    "Add WORKTREE-PATH as a known project, create a workspace, and switch to it."
-    (let* ((dir (file-name-as-directory (expand-file-name worktree-path)))
-           (name (+my/project-name dir)))
-      (projectile-add-known-project dir)
-      (+workspace-switch name (not (+workspace-exists-p name)))
-      (projectile-switch-project-by-name dir)))
-
-  (defvar +my/--pending-teardown nil
-    "Plist (:name :project-entry) captured before worktree deletion.")
-
-  (defun +my/worktree-teardown ()
-    "Remove worktree project and workspace using data captured by :before advice."
-    (if-let* ((info +my/--pending-teardown)
-              (name (plist-get info :name))
-              (entry (plist-get info :project-entry)))
-        (progn
-          (setq +my/--pending-teardown nil)
-          (setq projectile-known-projects (delete entry projectile-known-projects))
-          (projectile-save-known-projects)
-          (when (+workspace-exists-p name)
-            (+workspace-delete name)))
-      (message "+my/worktree-teardown: no pending teardown data")))
-
-  (defadvice! +my/worktree-checkout-a (path &rest _)
-    "Set up workspace and project after `magit-worktree-checkout'."
-    :after #'magit-worktree-checkout
-    (+my/worktree-setup path))
-
-  (defadvice! +my/worktree-branch-a (path &rest _)
-    "Set up workspace and project after `magit-worktree-branch'."
-    :after #'magit-worktree-branch
-    (+my/worktree-setup path))
-
-  (defadvice! +my/worktree-status-a (worktree &rest _)
-    "Set up workspace and project after `magit-worktree-status'."
-    :after #'magit-worktree-status
-    (when (file-regular-p (expand-file-name ".git" worktree))
-      (+my/worktree-setup worktree)))
-
-  (defadvice! +my/worktree-delete-before-a (worktree &rest _)
-    "Capture workspace name and projectile entry before directory is deleted."
-    :before #'magit-worktree-delete
-    (let* ((name (+my/project-name worktree))
-           (abbrev (abbreviate-file-name
-                    (file-name-as-directory (expand-file-name worktree))))
-           (entry (cl-find abbrev projectile-known-projects :test #'string=)))
-      (unless entry
-        (message "+my/worktree-delete: %s not found in projectile (looked for %s)" worktree abbrev))
-      (setq +my/--pending-teardown
-            (list :name name :project-entry (or entry abbrev)))))
-
-  (defadvice! +my/worktree-delete-a (&rest _)
-    "Clean up workspace and project after `magit-worktree-delete'."
-    :after #'magit-worktree-delete
-    (+my/worktree-teardown)))
 
 ;;; LSP ------------------------------------------------------------------------
 
@@ -574,7 +461,8 @@ Use this when jdtls fails to start due to a corrupted workspace."
   :defer t
   :commands (agent-shell
              agent-shell-anthropic-start-claude-code
-             agent-shell-google-start-gemini)
+             agent-shell-google-start-gemini
+             agent-shell-openai-start-codex)
   :config
   (setq agent-shell-show-welcome-message nil
         agent-shell-preferred-agent-config 'claude-code)
