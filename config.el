@@ -232,19 +232,20 @@
 
 ;; Java
 (after! lsp-java
-  (setf (cl-struct-slot-value 'lsp--client 'multi-root
-                              (gethash 'jdtls lsp-clients))
-        nil)
+  (when-let ((jdtls-client (gethash 'jdtls lsp-clients)))
+    (setf (cl-struct-slot-value 'lsp--client 'multi-root jdtls-client)
+          nil))
 
   ;; lsp-java--get-filename can produce cache names without a .java extension
   ;; (second regex branch), so Emacs opens them in fundamental-mode and LSP
   ;; never attaches.  Ensure the name always ends in .java.
-  (defadvice! +lsp-java--get-filename-a (orig-fn &rest args)
-    :around #'lsp-java--get-filename
-    (let ((name (apply orig-fn args)))
-      (if (and name (not (string-suffix-p ".java" name)))
-          (concat name ".java")
-        name)))
+  (when (fboundp 'lsp-java--get-filename)
+    (defadvice! +lsp-java--get-filename-a (orig-fn &rest args)
+      :around #'lsp-java--get-filename
+      (let ((name (apply orig-fn args)))
+        (if (and name (not (string-suffix-p ".java" name)))
+            (concat name ".java")
+          name))))
 
   (defun my/lsp-java--workspace-dir ()
     "Return the per-project jdtls workspace directory.
@@ -273,14 +274,15 @@ automatically gets a fresh workspace instead of reusing stale metadata."
   ;; Advise the command builder so the per-project workspace dir is used
   ;; at server-start time, avoiding the hook-ordering issue where
   ;; java-mode-hook fires before lsp-java is loaded.
-  (defadvice! my/lsp-java--ls-command-a (orig-fn)
-    "Bind `lsp-java-workspace-dir' to a per-project path around the
+  (when (fboundp 'lsp-java--ls-command)
+    (defadvice! my/lsp-java--ls-command-a (orig-fn)
+      "Bind `lsp-java-workspace-dir' to a per-project path around the
 server command construction, and remove any stale lock beforehand."
-    :around #'lsp-java--ls-command
-    (let ((lsp-java-workspace-dir (my/lsp-java--workspace-dir)))
-      (when (file-directory-p lsp-java-workspace-dir)
-        (my/lsp-java--remove-stale-lock lsp-java-workspace-dir))
-      (funcall orig-fn)))
+      :around #'lsp-java--ls-command
+      (let ((lsp-java-workspace-dir (my/lsp-java--workspace-dir)))
+        (when (file-directory-p lsp-java-workspace-dir)
+          (my/lsp-java--remove-stale-lock lsp-java-workspace-dir))
+        (funcall orig-fn))))
 
   (defun my/lsp-java-clean-workspace ()
     "Delete the current project's jdtls workspace and restart LSP.
@@ -295,10 +297,10 @@ Use this when jdtls fails to start due to a corrupted workspace."
         (when (bound-and-true-p lsp-mode)
           (lsp-disconnect))))))
 
-(after! java-mode
-  (setq c-basic-offset 4
-        tab-width 4
-        indent-tabs-mode nil))
+(add-hook! '(java-mode-hook java-ts-mode-hook)
+  (setq-local c-basic-offset 4
+              tab-width 4
+              indent-tabs-mode nil))
 
 (after! dap-mode
   (setq dap-java--var-format "\"$%s\""))
@@ -328,7 +330,7 @@ Use this when jdtls fails to start due to a corrupted workspace."
 (use-package! dhall-mode
   :defer t
   :init
-  (add-hook! 'dhall-mode-local-vars-hook #'lsp! 'append)
+  (add-hook! 'dhall-mode-local-vars-hook :append #'lsp!)
   :config
   (set-repl-handler! 'dhall-mode #'dhall-repl-show)
   (reformatter-define dhall-freeze-all
@@ -346,7 +348,10 @@ Use this when jdtls fails to start due to a corrupted workspace."
 (use-package! pr-review
   :commands (pr-review pr-review-open-url)
   :config
-  (setq pr-review-ghub-host "ghe.spotify.net/api/v3"
+  (setq pr-review-forges-alist
+        '(("ghe.spotify.net" . (github "ghe.spotify.net/api/v3" nil))
+          ("github.com" . (github nil nil))
+          ("gitlab.com" . (gitlab nil nil)))
         ;; Use gh CLI token (classic OAuth with repo scope) — fine-grained
         ;; tokens don't support the /compare/ endpoint on GHE 3.19.
         pr-review-ghub-auth-name
