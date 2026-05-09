@@ -19,9 +19,7 @@
   :recipe (:host gitlab
            :repo "Titan-C/org-cv"))
 (package! sql-trino)
-(package! sql-bigquery
-  :recipe (:local-repo "lisp/sql-bigquery"
-           :build (:not compile)))
+(package! sql-bigquery)
 (package! pr-inbox
   :recipe (:local-repo "lisp/pr-inbox"
            :build (:not compile)))
