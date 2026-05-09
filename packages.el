@@ -46,6 +46,10 @@
 (package! shell-maker)
 (package! acp)
 (package! agent-shell)
+(package! agent-review
+  :recipe (:host github
+           :repo "nineluj/agent-review"
+           :files ("*.el")))
 
 (unpin! magit)
 (unpin! transient)

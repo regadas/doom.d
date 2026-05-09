@@ -473,6 +473,19 @@ Use this when jdtls fails to start due to a corrupted workspace."
         agent-shell-preferred-agent-config 'claude-code)
   (require 'acp))
 
+(use-package! agent-review
+  :defer t
+  :commands (agent-review)
+  :after agent-shell)
+
+(map! :leader
+      :prefix ("o c a" . "agent-shell")
+      :desc "Start agent-shell"        "a" #'agent-shell
+      :desc "Start Claude Code (ACP)"  "c" #'agent-shell-anthropic-start-claude-code
+      :desc "Start Gemini (ACP)"       "g" #'agent-shell-google-start-gemini
+      :desc "Start Codex (ACP)"        "x" #'agent-shell-openai-start-codex
+      :desc "Review git changes"       "r" #'agent-review)
+
 (defun +link-hint-open-link-choose ()
   "Select a link with link-hint, then choose to open in webkit or brwser."
   (interactive)
