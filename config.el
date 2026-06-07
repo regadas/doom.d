@@ -59,15 +59,18 @@
         dired-listing-switches "-lat")  ; sort by date
   (add-hook! 'dired-mode-hook #'dired-hide-details-mode))
 
-(after! treemacs
-  (treemacs-project-follow-mode nil)
-  (treemacs-git-mode 'deferred)
-  (setq treemacs-collapse-dirs 10
-        treemacs-silent-refresh t
-        treemacs-silent-filewatch t
-        treemacs-file-event-delay 2000
-        treemacs-file-follow-delay 0.2
-        treemacs-indentation 1))
+;; (after! treemacs
+;;   ;; `treemacs-project-follow-mode' lives in a separate Treemacs feature, and
+;;   ;; passing nil toggles minor modes; use -1 to disable it explicitly.
+;;   (when (require 'treemacs-project-follow-mode nil t)
+;;     (treemacs-project-follow-mode -1))
+;;   (treemacs-git-mode 'deferred)
+;;   (setq treemacs-collapse-dirs 10
+;;         treemacs-silent-refresh t
+;;         treemacs-silent-filewatch t
+;;         treemacs-file-event-delay 2000
+;;         treemacs-file-follow-delay 0.2
+;;         treemacs-indentation 1))
 
 (after! doom-modeline
   (setq doom-modeline-major-mode-icon t
