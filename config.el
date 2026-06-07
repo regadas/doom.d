@@ -470,7 +470,8 @@ Use this when jdtls fails to start due to a corrupted workspace."
   :commands (agent-shell
              agent-shell-anthropic-start-claude-code
              agent-shell-google-start-gemini
-             agent-shell-openai-start-codex)
+             agent-shell-openai-start-codex
+             agent-shell-pi-start-agent)
   :config
   (setq agent-shell-show-welcome-message nil
         agent-shell-preferred-agent-config 'claude-code)
@@ -487,6 +488,7 @@ Use this when jdtls fails to start due to a corrupted workspace."
       :desc "Start Claude Code (ACP)"  "c" #'agent-shell-anthropic-start-claude-code
       :desc "Start Gemini (ACP)"       "g" #'agent-shell-google-start-gemini
       :desc "Start Codex (ACP)"        "x" #'agent-shell-openai-start-codex
+      :desc "Start Pi (ACP)"           "p" #'agent-shell-pi-start-agent
       :desc "Review git changes"       "r" #'agent-review)
 
 (defun +link-hint-open-link-choose ()
