@@ -2,3 +2,7 @@
 /.claude/settings.local.json
 /lisp/
 custom.el
+
+# Agent session working artifacts
+/context.md
+/review-loop/
