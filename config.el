@@ -235,34 +235,25 @@
 
 ;; Java
 (after! lsp-java
-  (when-let ((jdtls-client (gethash 'jdtls lsp-clients)))
-    (setf (cl-struct-slot-value 'lsp--client 'multi-root jdtls-client)
-          nil))
+  ;; --- Workspace-dir helpers (must be defined first) -------------------------
 
-  ;; lsp-java--get-filename can produce cache names without a .java extension
-  ;; (second regex branch), so Emacs opens them in fundamental-mode and LSP
-  ;; never attaches.  Ensure the name always ends in .java.
-  (when (fboundp 'lsp-java--get-filename)
-    (defadvice! +lsp-java--get-filename-a (orig-fn &rest args)
-      :around #'lsp-java--get-filename
-      (let ((name (apply orig-fn args)))
-        (if (and name (not (string-suffix-p ".java" name)))
-            (concat name ".java")
-          name))))
-
-  (defun my/lsp-java--workspace-dir ()
-    "Return the per-project jdtls workspace directory.
+  (defun my/lsp-java--workspace-dir-for-root (root)
+    "Return the per-project jdtls workspace directory for ROOT.
 Includes the JDT LS version in the hash so upgrading the server
 automatically gets a fresh workspace instead of reusing stale metadata."
-    (let* ((root (directory-file-name
-                  (file-truename (or (projectile-project-root) default-directory))))
+    (let* ((canonical-root (directory-file-name (file-truename root)))
            (version (and (boundp 'lsp-java-jdt-download-url)
                          (when (string-match "/\\([0-9][0-9.]*\\)/" lsp-java-jdt-download-url)
                            (match-string 1 lsp-java-jdt-download-url))))
-           (hash (md5 (concat root "\0" (or version "unknown")))))
+           (hash (md5 (concat canonical-root "\0" (or version "unknown")))))
       (expand-file-name hash
                         (expand-file-name "jdtls-workspaces"
                                           lsp-server-install-dir))))
+
+  (defun my/lsp-java--workspace-dir ()
+    "Return the per-project jdtls workspace directory for the current project."
+    (my/lsp-java--workspace-dir-for-root
+     (or (projectile-project-root) default-directory)))
 
   (defun my/lsp-java--remove-stale-lock (ws-dir)
     "Remove a stale .metadata/.lock file in WS-DIR if no jdtls owns it."
@@ -274,19 +265,76 @@ automatically gets a fresh workspace instead of reusing stale metadata."
         (delete-file lock)
         (message "Removed stale lock: %s" lock))))
 
-  ;; Advise the command builder so the per-project workspace dir is used
-  ;; at server-start time, avoiding the hook-ordering issue where
-  ;; java-mode-hook fires before lsp-java is loaded.
+  ;; --- Client patches --------------------------------------------------------
+  ;;
+  ;; 1. Disable multi-root so lsp-mode starts a SEPARATE jdtls per project root
+  ;;    instead of adding new folders to an existing instance.
+  ;; 2. Override :library-folders-fn so each jdtls gets its own cache dir
+  ;;    (the default shares ~/.emacs.d/workspace/.cache/ across all instances).
+  ;; 3. Wrap :initialization-options so the LSP initialize handshake sends only
+  ;;    the current project root as workspaceFolders, not the global session list.
+
+  (when-let ((jdtls-client (gethash 'jdtls lsp-clients)))
+    ;; (1) Disable multi-root
+    (setf (lsp--client-multi-root jdtls-client) nil)
+
+    ;; (2) Per-project library/cache folder
+    (setf (lsp--client-library-folders-fn jdtls-client)
+          (lambda (workspace)
+            (list (expand-file-name
+                   ".cache/"
+                   (my/lsp-java--workspace-dir-for-root
+                    (lsp--workspace-root workspace))))))
+
+    ;; (3) Isolated workspaceFolders in initialization-options
+    (let ((orig-init-fn (lsp--client-initialization-options jdtls-client)))
+      (setf (lsp--client-initialization-options jdtls-client)
+            (lambda ()
+              (let ((opts (funcall orig-init-fn)))
+                (plist-put opts :workspaceFolders
+                           (vector (lsp--path-to-uri
+                                    (or (projectile-project-root)
+                                        default-directory)))))))))
+
+  ;; --- Filename fix ----------------------------------------------------------
+  ;; lsp-java--get-filename can produce cache names without a .java extension
+  ;; (second regex branch), so Emacs opens them in fundamental-mode and LSP
+  ;; never attaches.  Ensure the name always ends in .java.
+  (when (fboundp 'lsp-java--get-filename)
+    (defadvice! +lsp-java--get-filename-a (orig-fn &rest args)
+      :around #'lsp-java--get-filename
+      (let ((name (apply orig-fn args)))
+        (if (and name (not (string-suffix-p ".java" name)))
+            (concat name ".java")
+          name))))
+
+  ;; --- Workspace-folders isolation -------------------------------------------
+  ;; The stock lsp-java--workspace-folders returns ALL session folders, leaking
+  ;; every project's root to every jdtls instance.  Return only the current
+  ;; workspace's root so jdtls never sees unrelated projects.
+  (defadvice! my/lsp-java--workspace-folders-a (workspace)
+    "Return only WORKSPACE's own root folder."
+    :override #'lsp-java--workspace-folders
+    (if workspace
+        (list (lsp--workspace-root workspace))
+      (list (or (projectile-project-root) default-directory))))
+
+  ;; --- Command builder advice ------------------------------------------------
+  ;; Bind both lsp-java-workspace-dir and lsp-java-workspace-cache-dir to
+  ;; per-project paths around the server command construction.
   (when (fboundp 'lsp-java--ls-command)
     (defadvice! my/lsp-java--ls-command-a (orig-fn)
-      "Bind `lsp-java-workspace-dir' to a per-project path around the
-server command construction, and remove any stale lock beforehand."
+      "Bind `lsp-java-workspace-dir' and `lsp-java-workspace-cache-dir'
+to per-project paths and remove any stale lock beforehand."
       :around #'lsp-java--ls-command
-      (let ((lsp-java-workspace-dir (my/lsp-java--workspace-dir)))
+      (let* ((lsp-java-workspace-dir (my/lsp-java--workspace-dir))
+             (lsp-java-workspace-cache-dir (expand-file-name ".cache/"
+                                                             lsp-java-workspace-dir)))
         (when (file-directory-p lsp-java-workspace-dir)
           (my/lsp-java--remove-stale-lock lsp-java-workspace-dir))
         (funcall orig-fn))))
 
+  ;; --- Interactive clean command ---------------------------------------------
   (defun my/lsp-java-clean-workspace ()
     "Delete the current project's jdtls workspace and restart LSP.
 Use this when jdtls fails to start due to a corrupted workspace."
