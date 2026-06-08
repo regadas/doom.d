@@ -463,6 +463,55 @@ Use this when jdtls fails to start due to a corrupted workspace."
         vterm-disable-bold t)
   (define-key vterm-mode-map [deletechar] #'vterm-send-delete))
 
+(defun +ghostel/project-popup (&optional arg)
+  "Toggle a project-root Ghostel terminal in a Doom popup.
+
+This uses a project-scoped popup buffer, separate from `ghostel-project',
+so `SPC o G' can still open a normal project terminal.  With prefix ARG,
+pass ARG through to `ghostel'."
+  (interactive "P")
+  (require 'ghostel)
+  (let* ((default-directory (project-root (project-current t)))
+         (ghostel-buffer-name (project-prefixed-buffer-name
+                               (concat (string-trim ghostel-buffer-name "*" "*")
+                                       "-popup")))
+         (buffer (ghostel--find-buffer-by-identity ghostel-buffer-name))
+         (window (and buffer (get-buffer-window buffer))))
+    (if (and window (not arg))
+        (delete-window window)
+      (let ((display-buffer-overriding-action
+             '(+popup-buffer
+               (side . bottom)
+               (vslot . -5)
+               (window-height . 0.35)
+               (window-parameters
+                (ttl . nil)
+                (quit . nil)
+                (select . t)
+                (modeline . nil)))))
+        (ghostel arg)))))
+
+(defun +ghostel/project-new ()
+  "Open a fresh project-root Ghostel terminal in the current window."
+  (interactive)
+  (require 'ghostel)
+  ;; `ghostel-project' reuses the project terminal by default; a
+  ;; non-numeric arg asks Ghostel for a fresh buffer instead.
+  (ghostel-project t))
+
+(use-package! ghostel
+  :defer t
+  :commands (ghostel
+             ghostel-project)
+  :init
+  (map! :leader
+        :desc "Toggle Ghostel project popup" "o g" #'+ghostel/project-popup
+        :desc "Open new Ghostel project terminal" "o G" #'+ghostel/project-new))
+
+(use-package! evil-ghostel
+  :after (ghostel evil)
+  :hook (ghostel-mode . evil-ghostel-mode))
+
 (use-package! kubel
   :defer t
   :commands (kubel)

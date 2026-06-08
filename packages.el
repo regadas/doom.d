@@ -37,6 +37,20 @@
 (package! vterm-anti-flicker-filter
   :recipe (:host github
            :repo "martinbaillie/vterm-anti-flicker-filter"))
+(package! ghostel
+  :recipe (:host github
+           :repo "dakra/ghostel"
+           :files (:defaults
+                   "etc"
+                   "src"
+                   "vendor"
+                   "build.zig"
+                   "build.zig.zon"
+                   "symbols.map")))
+(package! evil-ghostel
+  :recipe (:host github
+           :repo "dakra/ghostel"
+           :files ("extensions/evil-ghostel/*.el")))
 
 (package! consult-gh)
 (package! pr-review)
