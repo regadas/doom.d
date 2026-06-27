@@ -180,7 +180,8 @@
         lsp-semantic-tokens-enable nil
         lsp-enable-folding nil
         lsp-enable-links nil
-        lsp-enable-file-watchers nil
+        lsp-enable-file-watchers nil ; jdtls re-enabled selectively, see after! lsp-java
+        lsp-file-watch-threshold 10000
         lsp-enable-on-type-formatting nil
         lsp-enable-imenu nil
         lsp-enable-indentation nil
@@ -219,7 +220,7 @@
                           "-XX:GCTimeRatio=4"
                           "-XX:AdaptiveSizePolicyWeight=90"
                           "-Dsun.zip.disableMemoryMapping=true")
-        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.57.0/jdt-language-server-1.57.0-202602261110.tar.gz"
+        lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.58.0/jdt-language-server-1.58.0-202604151538.tar.gz"
         lsp-java-jdt-ls-android-support-enabled nil
         lsp-java-completion-max-results 30
         lsp-java-maven-download-sources t
@@ -274,12 +275,23 @@ automatically gets a fresh workspace instead of reusing stale metadata."
   ;; 3. Wrap :initialization-options so the LSP initialize handshake sends only
   ;;    the current project root as workspaceFolders, not the global session list.
 
+  ;; NOTE: mutate slots via `cl-struct-slot-value' rather than the per-slot
+  ;; accessors (e.g. `(setf (lsp--client-multi-root c) ...)').  The accessor
+  ;; `setf' relies on the accessor's cl-defstruct compiler-macro being
+  ;; resolvable at macro-expansion time; during the *cold* load of lsp-java
+  ;; (when this `after!' body first runs via `eval-after-load') that resolution
+  ;; can fail, so `gv' falls back to the non-existent named setter and signals
+  ;;   Symbol's function definition is void: \(setf lsp--client-multi-root\)
+  ;; `cl-struct-slot-value' has a `gv-expander' baked into cl-macs (which is
+  ;; always loaded before any `setf' can expand), so it is resolvable on every
+  ;; macro-expansion and avoids the race entirely.
+  (require 'cl-lib)
   (when-let ((jdtls-client (gethash 'jdtls lsp-clients)))
     ;; (1) Disable multi-root
-    (setf (lsp--client-multi-root jdtls-client) nil)
+    (setf (cl-struct-slot-value 'lsp--client 'multi-root jdtls-client) nil)
 
     ;; (2) Per-project library/cache folder
-    (setf (lsp--client-library-folders-fn jdtls-client)
+    (setf (cl-struct-slot-value 'lsp--client 'library-folders-fn jdtls-client)
           (lambda (workspace)
             (list (expand-file-name
                    ".cache/"
@@ -288,7 +300,7 @@ automatically gets a fresh workspace instead of reusing stale metadata."
 
     ;; (3) Isolated workspaceFolders in initialization-options
     (let ((orig-init-fn (lsp--client-initialization-options jdtls-client)))
-      (setf (lsp--client-initialization-options jdtls-client)
+      (setf (cl-struct-slot-value 'lsp--client 'initialization-options jdtls-client)
             (lambda ()
               (let ((opts (funcall orig-init-fn)))
                 (plist-put opts :workspaceFolders
@@ -307,6 +319,82 @@ automatically gets a fresh workspace instead of reusing stale metadata."
         (if (and name (not (string-suffix-p ".java" name)))
             (concat name ".java")
           name))))
+
+  ;; --- jdt:// URI resolution fix ----------------------------------------------
+  ;; Stock `lsp-java--resolve-uri' breaks go-to-definition into dependencies:
+  ;;   1. It reads/writes the GLOBAL `lsp-java-workspace-cache-dir' (the
+  ;;      ls-command advice below only rebinds it during server startup), so
+  ;;      every project and every jdtls version share one cache -- and
+  ;;      `lsp-java--get-filename' has no jar/version in the name, so
+  ;;      different dependency versions collide on the same file.
+  ;;   2. It never refreshes an existing cache file, so after a rebuild or
+  ;;      dependency bump jdtls' line numbers point into stale text
+  ;;      (right file, wrong line).
+  ;;   3. (lsp-find-workspace 'jdtls nil) grabs the FIRST jdtls instance in
+  ;;      the session, which with multi-root disabled can be another
+  ;;      project's server (wrong classpath).
+  (defvar my/lsp-java--resolve-uri-times (make-hash-table :test #'equal)
+    "URI -> last `java/classFileContents' fetch time, to avoid re-fetch storms.")
+
+  (defadvice! my/lsp-java--resolve-uri-a (uri)
+    "Resolve jdt:// URI into the per-project cache dir, refreshing stale content."
+    :override #'lsp-java--resolve-uri
+    (let* ((workspace (or (and buffer-file-name
+                               (lsp-find-workspace 'jdtls buffer-file-name))
+                          (lsp-find-workspace 'jdtls default-directory)
+                          (lsp-find-workspace 'jdtls nil)))
+           (root (or (and workspace (lsp--workspace-root workspace))
+                     (projectile-project-root)
+                     default-directory))
+           (cache-dir (expand-file-name
+                       ".cache/" (my/lsp-java--workspace-dir-for-root root)))
+           (file-location (expand-file-name (lsp-java--get-filename uri) cache-dir))
+           (last-fetch (gethash uri my/lsp-java--resolve-uri-times))
+           (fresh (and last-fetch
+                       (file-readable-p file-location)
+                       (< (float-time (time-subtract nil last-fetch)) 60))))
+      (unless fresh
+        (condition-case err
+            (let ((content (with-lsp-workspace workspace
+                             (lsp-send-request
+                              (lsp-make-request
+                               "java/classFileContents" (list :uri uri))))))
+              (lsp-java--ensure-dir (file-name-directory file-location))
+              (unless (and (file-readable-p file-location)
+                           (string= content
+                                    (with-temp-buffer
+                                      (insert-file-contents file-location)
+                                      (buffer-string))))
+                (with-temp-file file-location (insert content))
+                (with-temp-file (lsp-java--get-metadata-location file-location)
+                  (insert uri))
+                ;; Revert any live buffer so it shows the fresh content.
+                (when-let ((buf (get-file-buffer file-location)))
+                  (with-current-buffer buf
+                    (revert-buffer :ignore-auto :noconfirm :preserve-modes))))
+              (puthash uri (current-time) my/lsp-java--resolve-uri-times))
+          (error
+           ;; Fall back to the cached copy if the request failed.
+           (unless (file-readable-p file-location)
+             (signal (car err) (cdr err))))))
+      file-location))
+
+  ;; --- File watchers for jdtls only -------------------------------------------
+  ;; jdtls registers workspace/didChangeWatchedFiles watchers (*.java, pom.xml,
+  ;; *.gradle, .project...).  With `lsp-enable-file-watchers' nil that
+  ;; registration is silently dropped, so jdtls never hears about external
+  ;; changes (builds, git pull, codegen) and its index goes stale until a full
+  ;; rebuild.  Honor watcher registrations for jdtls; all other servers keep
+  ;; the global nil.
+  (defadvice! my/lsp--enable-watchers-for-jdtls-a (orig-fn &rest args)
+    :around #'lsp--server-register-capability
+    (let ((lsp-enable-file-watchers
+           (or lsp-enable-file-watchers
+               (and lsp--cur-workspace
+                    (eq (lsp--client-server-id
+                         (lsp--workspace-client lsp--cur-workspace))
+                        'jdtls)))))
+      (apply orig-fn args)))
 
   ;; --- Workspace-folders isolation -------------------------------------------
   ;; The stock lsp-java--workspace-folders returns ALL session folders, leaking
