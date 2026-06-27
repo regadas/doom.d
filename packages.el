@@ -2,6 +2,7 @@
 ;;; $DOOMDIR/packages.el
 
 (package! bazel)
+(package! reformatter)
 (package! copilot
   :recipe (:host github
            :repo "copilot-emacs/copilot.el"
@@ -26,7 +27,6 @@
 (package! undo-hl
   :recipe (:host github
            :repo "casouri/undo-hl"))
-(package! counsel-jq)
 (package! zoom)
 (package! d2-mode)
 (package! just-mode)
@@ -34,9 +34,6 @@
 (package! claude-code-ide
   :recipe (:host github
            :repo "manzaltu/claude-code-ide.el"))
-(package! vterm-anti-flicker-filter
-  :recipe (:host github
-           :repo "martinbaillie/vterm-anti-flicker-filter"))
 (package! ghostel
   :recipe (:host github
            :repo "dakra/ghostel"
@@ -56,6 +53,11 @@
 (package! pr-review)
 
 (package! nyan-mode)
+
+(package! rainbow-csv
+  :recipe (:host github
+           :repo "emacs-vs/rainbow-csv"
+           :files ("*.el")))
 
 (package! shell-maker)
 (package! acp)

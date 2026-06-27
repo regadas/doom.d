@@ -384,6 +384,7 @@ Use this when jdtls fails to start due to a corrupted workspace."
   (add-hook! 'dhall-mode-local-vars-hook :append #'lsp!)
   :config
   (set-repl-handler! 'dhall-mode #'dhall-repl-show)
+  (require 'reformatter)
   (reformatter-define dhall-freeze-all
     :program dhall-command
     :args '("freeze" "--all")
@@ -428,6 +429,7 @@ Use this when jdtls fails to start due to a corrupted workspace."
   (setq d2-output-format ".png"))
 
 (after! d2-mode
+  (require 'reformatter)
   (reformatter-define d2-format
     :program "d2"
     :stdin nil
@@ -557,11 +559,6 @@ pass ARG through to `ghostel'."
         :desc "Show debug buffer" "d" #'claude-code-ide-show-debug
         :desc "Clear debug buffer" "D" #'claude-code-ide-clear-debug))
 
-;; (use-package! vterm-anti-flicker-filter)
-;; (after! claude-code-ide
-;;   (setq claude-code-ide-vterm-anti-flicker t
-;;         claude-code-ide-vterm-render-delay 0))
-
 (use-package! agent-shell
   :defer t
   :commands (agent-shell
@@ -587,6 +584,10 @@ pass ARG through to `ghostel'."
       :desc "Start Codex (ACP)"        "x" #'agent-shell-openai-start-codex
       :desc "Start Pi (ACP)"           "p" #'agent-shell-pi-start-agent
       :desc "Review git changes"       "r" #'agent-review)
+
+(use-package! rainbow-csv
+  :hook ((csv-mode . rainbow-csv-mode)
+         (tsv-mode . rainbow-csv-mode)))
 
 (defun +link-hint-open-link-choose ()
   "Select a link with link-hint, then choose to open in webkit or brwser."
