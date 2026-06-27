@@ -2,21 +2,14 @@
 
 ;;; Core -----------------------------------------------------------------------
 
-;; Garbage Collection Optimizations
-(add-hook! 'doom-after-init-hook
-  (setq gc-cons-threshold (* 100 1024 1024)  ; 100MB
-        gc-cons-percentage 0.1))
-
-(add-function :after after-focus-change-function
-              (lambda () (unless (frame-focus-state) (garbage-collect))))
-
 (setq user-full-name "Filipe Regadas"
       user-mail-address "oss@regadas.email")
 
 (setq auth-sources '("~/.authinfo.gpg"))
 
 (setq doom-theme 'modus-operandi
-      doom-font (font-spec :family "Iosevka SS14" :size 16))
+      ;; doom-font (font-spec :family "Iosevka SS14" :size 16))
+      doom-font (font-spec :family "Aporetic Sans Mono" :size 16))
 
 (setq mouse-wheel-flip-direction t
       mouse-wheel-tilt-scroll t)
@@ -31,7 +24,6 @@
 
 (setq inhibit-compacting-font-caches t
       auto-save-default t
-      idle-update-delay 1.0
       jit-lock-defer-time 0.05)
 
 (setq display-line-numbers-type 'relative)
@@ -85,7 +77,6 @@
 (use-package! nyan-mode
   :after doom-modeline
   :config
-  (setq nyan-wavy-trail t)
   (nyan-mode 1))
 
 (after! corfu
