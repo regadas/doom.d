@@ -580,6 +580,25 @@ pass ARG through to `ghostel'."
   ;; non-numeric arg asks Ghostel for a fresh buffer instead.
   (ghostel-project t))
 
+(defun +ghostel/add-to-workspace-h ()
+  "Add the current ghostel buffer to the active Doom workspace.
+
+`ghostel-mode' derives from `fundamental-mode', so Doom's real-buffer
+filter (`doom-unreal-buffer-p') keeps ghostel buffers out of the
+perspective and they never appear in the workspace buffer list
+(`SPC ,').  Add the buffer to the current perspective explicitly
+rather than adding `ghostel-mode' to `doom-real-buffer-modes': the
+latter gives ghostel buffers full \"real buffer\" treatment (popup,
+window-management and autosave handling) whose extra window
+reconfiguration aggravates a re-entrancy crash in the native module.
+`persp-add-buffer' only updates the perspective's buffer list (no
+window changes), so it is safe here."
+  (when (and (bound-and-true-p persp-mode)
+             (fboundp 'persp-add-buffer)
+             (fboundp 'get-current-persp)
+             (get-current-persp))
+    (persp-add-buffer (current-buffer) (get-current-persp) nil nil)))
+
 (use-package! ghostel
   :defer t
   :commands (ghostel
@@ -587,7 +606,8 @@ pass ARG through to `ghostel'."
   :init
   (map! :leader
         :desc "Toggle Ghostel project popup" "o g" #'+ghostel/project-popup
-        :desc "Open new Ghostel project terminal" "o G" #'+ghostel/project-new))
+        :desc "Open new Ghostel project terminal" "o G" #'+ghostel/project-new)
+  :hook (ghostel-mode . +ghostel/add-to-workspace-h))
 
 (use-package! evil-ghostel
   :after (ghostel evil)
