@@ -89,7 +89,7 @@
 ;;; Projects / VCS -------------------------------------------------------------
 
 (after! projectile
-  (setq projectile-project-search-path '("~/projects/" "~/projects/spotify" "~/projects/experiments")
+  (setq projectile-project-search-path '("~/src/" "~/src/spotify" "~/src/experiments")
         projectile-project-root-files-bottom-up '(".projectile" ".git")
         projectile-enable-caching t))
 
@@ -517,7 +517,7 @@ Use this when jdtls fails to start due to a corrupted workspace."
     :lighter " D2Fmt"))
 
 ;; Org
-(setq org-directory "~/projects/brain-dump")
+(setq org-directory "~/src/brain-dump")
 
 (use-package! ox-awesomecv
   :after org)
@@ -632,7 +632,7 @@ window changes), so it is safe here."
   :after consult
   :config
   (consult-gh-enable-default-keybindings)
-  (setq consult-gh-default-clone-directory "~/projects/"))
+  (setq consult-gh-default-clone-directory "~/src/"))
 
 (use-package! claude-code-ide
   :config
