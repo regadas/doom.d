@@ -489,9 +489,9 @@ Use this when jdtls fails to start due to a corrupted workspace."
         (string-trim (shell-command-to-string
                       "gh auth token --hostname ghe.spotify.net"))))
 
-;; PR Inbox
-(use-package! pr-inbox
-  :commands (pr-inbox))
+;; ;; PR Inbox
+;; (use-package! pr-inbox
+;;   :commands (pr-inbox))
 
 ;; SQL
 (use-package! sql-bigquery
