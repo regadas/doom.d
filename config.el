@@ -532,9 +532,41 @@ Use this when jdtls fails to start due to a corrupted workspace."
 (after! grip-mode
   (setq grip-command 'mdopen)
 
+  (defun my/grip-wait-for-server-a (&rest _)
+    "Wait until mdopen is listening before sending xwidget to its URL."
+    (when (eq grip--command 'mdopen)
+      (let ((deadline (+ (float-time) grip-sleep-time))
+            connection)
+        (while (and (not connection)
+                    (< (float-time) deadline))
+          (setq connection
+                (condition-case nil
+                    (open-network-stream
+                     "grip-server-probe" nil grip-preview-host grip--port)
+                  (file-error nil)))
+          (unless connection
+            (sleep-for 0.05)))
+        (when connection
+          (delete-process connection)))))
+
+  ;; `grip-mode' opens xwidget before mdopen is always ready.  The failed
+  ;; navigation leaves xwidget displaying the preceding Markdown file.
+  (advice-remove #'grip--preview-1 #'my/grip-wait-for-server-a)
+  (advice-add #'grip--preview-1 :before #'my/grip-wait-for-server-a)
+
+  ;; Keep xwidget previews in a stable right-hand side window.
+  (set-popup-rule! "^\\*xwidget-webkit:"
+    :side 'right
+    :size 0.45
+    :select t
+    :quit nil
+    :ttl nil)
+
+  ;; Browse an existing preview instead of toggling its process off.
   (map! :map markdown-mode-map
         :localleader
         "p" #'grip-browse-preview))
+
 
 ;;; Tools ----------------------------------------------------------------------
 
