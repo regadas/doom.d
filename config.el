@@ -699,8 +699,62 @@ window changes), so it is safe here."
              agent-shell-pi-start-agent)
   :config
   (setq agent-shell-show-welcome-message nil
-        agent-shell-preferred-agent-config 'claude-code)
+        agent-shell-preferred-agent-config 'pi
+        ;; Only deliberate context (files, active region). Drop implicit
+        ;; `error'/`line' at-point sources — they inject incidental noise
+        ;; (e.g. markdownlint diagnostics) into new shells.
+        agent-shell-context-sources '(files region))
+  ;; Claim new shells for the workspace they're created in. Shell buffers
+  ;; are often only ever shown via `display-buffer' (never switched to),
+  ;; so Doom's `doom-switch-buffer-hook' misses them and they end up in
+  ;; no persp — which breaks the manager's workspace-aware goto below.
+  (when (modulep! :ui workspaces)
+    (add-hook 'agent-shell-mode-hook #'+workspaces-add-current-buffer-h))
   (require 'acp))
+
+(use-package! agent-shell-manager
+  :defer t
+  :commands (agent-shell-manager-toggle)
+  :after agent-shell
+  :config
+  (setq agent-shell-manager-side 'bottom)
+  ;; Use evil emacs state so the manager's native keys (RET, k, c, r, d,
+  ;; m, M, t, l, q) aren't shadowed by evil normal-state bindings.
+  (evil-set-initial-state 'agent-shell-manager-mode 'emacs)
+  ;; Make the manager workspace-aware: `agent-shell-manager-goto' only
+  ;; looks at windows in the current workspace, so jumping to a shell
+  ;; that lives in another persp-mode workspace displays it in the wrong
+  ;; one. Instead, switch to the workspace that owns the buffer first,
+  ;; then select/reuse a window there.
+  (defadvice! my/agent-shell-manager-goto-workspace-a (fn &rest args)
+    "Switch to the workspace containing the shell buffer before visiting it."
+    :around #'agent-shell-manager-goto
+    (let ((buffer (tabulated-list-get-id)))
+      (if-let* (((and buffer
+                      (buffer-live-p buffer)
+                      (bound-and-true-p persp-mode)
+                      (not (+workspace-contains-buffer-p buffer))))
+                (workspace
+                 (cl-find-if (lambda (ws) (+workspace-contains-buffer-p buffer ws))
+                             (+workspace-list))))
+          (progn
+            (agent-shell-manager--hide-window)
+            (+workspace-switch (persp-name workspace))
+            ;; Replicate goto's window selection inside the target workspace.
+            (if-let* ((win (get-buffer-window buffer)))
+                (select-window win)
+              (if-let* ((agent-win
+                         (cl-find-if
+                          (lambda (w)
+                            (with-current-buffer (window-buffer w)
+                              (derived-mode-p 'agent-shell-mode)))
+                          (window-list))))
+                  (progn
+                    (set-window-buffer agent-win buffer)
+                    (select-window agent-win))
+                (agent-shell--display-buffer buffer))))
+        ;; In current workspace (or no owning workspace): default behavior.
+        (apply fn args)))))
 
 (use-package! agent-review
   :defer t
@@ -714,6 +768,7 @@ window changes), so it is safe here."
       :desc "Start Gemini (ACP)"       "g" #'agent-shell-google-start-gemini
       :desc "Start Codex (ACP)"        "x" #'agent-shell-openai-start-codex
       :desc "Start Pi (ACP)"           "p" #'agent-shell-pi-start-agent
+      :desc "Toggle shell manager"     "m" #'agent-shell-manager-toggle
       :desc "Review git changes"       "r" #'agent-review)
 
 (use-package! rainbow-csv

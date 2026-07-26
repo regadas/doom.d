@@ -62,6 +62,10 @@
 (package! shell-maker)
 (package! acp)
 (package! agent-shell)
+(package! agent-shell-manager
+  :recipe (:host github
+           :repo "jethrokuan/agent-shell-manager"
+           :files ("*.el")))
 (package! agent-review
   :recipe (:host github
            :repo "nineluj/agent-review"
