@@ -570,85 +570,22 @@ Use this when jdtls fails to start due to a corrupted workspace."
 
 ;;; Tools ----------------------------------------------------------------------
 
-(after! vterm
-  (setq vterm-timer-delay 0.03
-        vterm-disable-underline t
-        vterm-disable-bold t)
-  (define-key vterm-mode-map [deletechar] #'vterm-send-delete))
-
-(defun +ghostel/project-popup (&optional arg)
-  "Toggle a project-root Ghostel terminal in a Doom popup.
-
-This uses a project-scoped popup buffer, separate from `ghostel-project',
-so `SPC o G' can still open a normal project terminal.  With prefix ARG,
-pass ARG through to `ghostel'."
-  (interactive "P")
-  (require 'ghostel)
-  (let* ((default-directory (project-root (project-current t)))
-         (ghostel-buffer-name (project-prefixed-buffer-name
-                               (concat (string-trim ghostel-buffer-name "*" "*")
-                                       "-popup")))
-         (buffer (ghostel--find-buffer-by-identity ghostel-buffer-name))
-         (window (and buffer (get-buffer-window buffer))))
-    (if (and window (not arg))
-        (delete-window window)
-      (let ((display-buffer-overriding-action
-             '(+popup-buffer
-               (side . bottom)
-               (vslot . -5)
-               (window-height . 0.35)
-               (window-parameters
-                (ttl . nil)
-                (quit . nil)
-                (select . t)
-                (modeline . nil)))))
-        (ghostel arg)))))
-
-(defun +ghostel/project-new ()
-  "Open a fresh project-root Ghostel terminal in the current window."
-  (interactive)
-  (require 'ghostel)
-  ;; `ghostel-project' reuses the project terminal by default; a
-  ;; non-numeric arg asks Ghostel for a fresh buffer instead.
-  (ghostel-project t))
-
 (defun +ghostel/add-to-workspace-h ()
-  "Add the current ghostel buffer to the active Doom workspace.
-
-`ghostel-mode' derives from `fundamental-mode', so Doom's real-buffer
-filter (`doom-unreal-buffer-p') keeps ghostel buffers out of the
-perspective and they never appear in the workspace buffer list
-(`SPC ,').  Add the buffer to the current perspective explicitly
-rather than adding `ghostel-mode' to `doom-real-buffer-modes': the
-latter gives ghostel buffers full \"real buffer\" treatment (popup,
-window-management and autosave handling) whose extra window
-reconfiguration aggravates a re-entrancy crash in the native module.
-`persp-add-buffer' only updates the perspective's buffer list (no
-window changes), so it is safe here."
+  "Add the current Ghostel buffer to the active Doom workspace."
   (when (and (bound-and-true-p persp-mode)
              (fboundp 'persp-add-buffer)
              (fboundp 'get-current-persp)
              (get-current-persp))
     (persp-add-buffer (current-buffer) (get-current-persp) nil nil)))
 
-(use-package! ghostel
-  :defer t
-  :commands (ghostel
-             ghostel-project)
-  :init
-  (map! :leader
-        :desc "Toggle Ghostel project popup" "o g" #'+ghostel/project-popup
-        :desc "Open new Ghostel project terminal" "o G" #'+ghostel/project-new)
-  :hook (ghostel-mode . +ghostel/add-to-workspace-h))
-
-(use-package! evil-ghostel
-  :after (ghostel evil)
-  :hook (ghostel-mode . evil-ghostel-mode))
+(after! ghostel
+  ;; Avoid native-module re-entrant redraws from Doom's real-buffer handling.
+  (setq doom-real-buffer-modes (delq 'ghostel-mode doom-real-buffer-modes))
+  (add-hook 'ghostel-mode-hook #'+ghostel/add-to-workspace-h))
 
 (use-package! kubel
   :defer t
-  :commands (kubel)
-  :config (kubel-vterm-setup))
+  :commands (kubel))
 
 ;; accept completion from copilot and fallback to corfu
 (use-package! copilot
@@ -670,7 +607,7 @@ window changes), so it is safe here."
   :config
   (claude-code-ide-emacs-tools-setup)
   (setq claude-code-ide-use-side-window t
-        claude-code-ide-terminal-backend 'vterm
+        claude-code-ide-terminal-backend 'ghostel
         claude-code-ide-cli-extra-flags "--enable-auto-mode")
   (map! :leader
         :prefix ("o c" . "claude")

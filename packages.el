@@ -34,21 +34,6 @@
 (package! claude-code-ide
   :recipe (:host github
            :repo "manzaltu/claude-code-ide.el"))
-(package! ghostel
-  :recipe (:host github
-           :repo "dakra/ghostel"
-           :files (:defaults
-                   "etc"
-                   "src"
-                   "vendor"
-                   "build.zig"
-                   "build.zig.zon"
-                   "symbols.map")))
-(package! evil-ghostel
-  :recipe (:host github
-           :repo "dakra/ghostel"
-           :files ("extensions/evil-ghostel/*.el")))
-
 (package! consult-gh)
 (package! pr-review)
 
