@@ -93,9 +93,13 @@
         projectile-project-root-files-bottom-up '(".projectile" ".git")
         projectile-enable-caching t))
 
-(after! browse-at-remote
-  (add-to-list 'browse-at-remote-remote-type-regexps
-               '(:host "^ghe\\.spotify\\.net$" :type "github") 'append))
+(after! git-link
+  (add-to-list 'git-link-remote-alist
+               '("^ghe\\.spotify\\.net$" git-link-github))
+  (add-to-list 'git-link-commit-remote-alist
+               '("^ghe\\.spotify\\.net$" git-link-commit-github))
+  (add-to-list 'git-link-homepage-remote-alist
+               '("^ghe\\.spotify\\.net$" git-link-homepage-github)))
 
 (after! forge
   (push '("ghe.spotify.net" "ghe.spotify.net/api/v3" "ghe.spotify.net" forge-github-repository)
@@ -117,7 +121,6 @@
 (defun +my/magit-lightweight-status-h ()
   "Strip expensive sections in large repos."
   (when (+my/magit-large-repo-p)
-    (setq-local magit-revision-insert-related-refs nil)
     (setq-local magit-status-headers-hook
                 '(magit-insert-error-header
                   magit-insert-diff-filter-header
@@ -167,13 +170,10 @@
 (after! lsp-mode
   ;; Performance: disable heavy features
   (setq lsp-lens-enable nil
-        lsp-headerline-breadcrumb-enable nil
         lsp-semantic-tokens-enable nil
-        lsp-enable-folding nil
         lsp-enable-links nil
         lsp-enable-file-watchers nil ; jdtls re-enabled selectively, see after! lsp-java
         lsp-file-watch-threshold 10000
-        lsp-enable-on-type-formatting nil
         lsp-enable-imenu nil
         lsp-enable-indentation nil
         lsp-eldoc-enable-hover nil
@@ -196,7 +196,6 @@
         lsp-auto-guess-root t
         lsp-idle-delay 0.25
         lsp-response-timeout 10
-        lsp-keep-workspace-alive nil
         lsp-copilot-enabled nil
         lsp-completion-enable-additional-text-edit nil
         lsp-bash-highlight-parsing-errors t
@@ -462,7 +461,6 @@ Use this when jdtls fails to start due to a corrupted workspace."
   :init
   (add-hook! 'dhall-mode-local-vars-hook :append #'lsp!)
   :config
-  (set-repl-handler! 'dhall-mode #'dhall-repl-show)
   (require 'reformatter)
   (reformatter-define dhall-freeze-all
     :program dhall-command
@@ -472,8 +470,7 @@ Use this when jdtls fails to start due to a corrupted workspace."
         :localleader
         "l" #'dhall-lint-buffer
         "ff" #'dhall-freeze-buffer
-        "fa" #'dhall-freeze-all-buffer
-        "t" #'dhall-buffer-type-show))
+        "fa" #'dhall-freeze-all-buffer))
 
 ;; PR Review
 (use-package! pr-review
