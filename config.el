@@ -669,9 +669,22 @@ Use this when jdtls fails to start due to a corrupted workspace."
   :after agent-shell
   :config
   (setq agent-shell-manager-side 'bottom)
-  ;; Use evil emacs state so the manager's native keys (RET, k, c, r, d,
-  ;; m, M, t, l, q) aren't shadowed by evil normal-state bindings.
-  (evil-set-initial-state 'agent-shell-manager-mode 'emacs)
+  ;; Keep Doom's leader and window bindings available in the manager while
+  ;; preserving its native management keys in Evil normal state.
+  (evil-set-initial-state 'agent-shell-manager-mode 'normal)
+  (map! :map agent-shell-manager-mode-map
+        :n "RET"     #'agent-shell-manager-goto
+        :n "g"       #'agent-shell-manager-refresh
+        :n "k"       #'agent-shell-manager-kill
+        :n "c"       #'agent-shell-manager-new
+        :n "r"       #'agent-shell-manager-restart
+        :n "d"       #'agent-shell-manager-delete-killed
+        :n "m"       #'agent-shell-manager-set-mode
+        :n "M"       #'agent-shell-manager-set-model
+        :n "t"       #'agent-shell-manager-view-traffic
+        :n "l"       #'agent-shell-manager-toggle-logging
+        :n "C-c C-c" #'agent-shell-manager-interrupt
+        :n "q"       #'quit-window)
   ;; Make the manager workspace-aware: `agent-shell-manager-goto' only
   ;; looks at windows in the current workspace, so jumping to a shell
   ;; that lives in another persp-mode workspace displays it in the wrong
