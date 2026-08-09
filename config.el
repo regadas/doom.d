@@ -655,6 +655,14 @@ Use this when jdtls fails to start due to a corrupted workspace."
     (add-hook 'agent-shell-mode-hook #'+workspaces-add-current-buffer-h))
   (require 'acp))
 
+(use-package! agent-shell-macext
+  :after agent-shell
+  :hook (agent-shell-mode . agent-shell-macext-setup)
+  :custom
+  (agent-shell-macext-file-copy-policy 'auto)
+  (agent-shell-macext-notifications t)
+  (agent-shell-macext-notify-current-buffer nil))
+
 (use-package! agent-shell-manager
   :defer t
   :commands (agent-shell-manager-toggle)

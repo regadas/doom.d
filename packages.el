@@ -45,6 +45,10 @@
 (package! shell-maker)
 (package! acp)
 (package! agent-shell)
+(package! agent-shell-macext
+  :recipe (:host github
+           :repo "cxa/agent-shell-macext"
+           :files ("*.el")))
 (package! agent-shell-manager
   :recipe (:host github
            :repo "jethrokuan/agent-shell-manager"
