@@ -28,6 +28,15 @@
 
 (setq display-line-numbers-type 'relative)
 
+(after! image
+  (setq image-use-external-converter t))
+
+(after! image-converter
+  (setq image-converter 'imagemagick)
+  (setf (alist-get 'imagemagick image-converter--converters)
+        '(:command "magick"
+          :probe ("-list" "format"))))
+
 ;;; Editor / UI ----------------------------------------------------------------
 
 (setq evil-split-window-below t
