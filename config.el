@@ -93,7 +93,23 @@
 
 (after! diff-hl
   (setq diff-hl-flydiff-delay 2
-        diff-hl-draw-borders nil))
+        diff-hl-draw-borders nil)
+
+  ;; Modus styles diff-hl with background colors, but vc-gutter's +pretty flag
+  ;; makes those backgrounds transparent.  Use the corresponding Modus colors
+  ;; as fringe bitmap foregrounds instead.
+  (defun +my/diff-hl-use-modus-fringe-colors-h ()
+    (when (and (featurep 'modus-themes)
+               (modus-themes-get-current-theme))
+      (set-face-foreground 'diff-hl-insert
+                           (modus-themes-get-color-value 'bg-added-fringe :with-overrides))
+      (set-face-foreground 'diff-hl-change
+                           (modus-themes-get-color-value 'bg-changed-fringe :with-overrides))
+      (set-face-foreground 'diff-hl-delete
+                           (modus-themes-get-color-value 'bg-removed-fringe :with-overrides))))
+
+  (add-hook 'doom-load-theme-hook #'+my/diff-hl-use-modus-fringe-colors-h)
+  (+my/diff-hl-use-modus-fringe-colors-h))
 
 ;;; Projects / VCS -------------------------------------------------------------
 
