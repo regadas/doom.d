@@ -58,3 +58,4 @@
 (unpin! magit)
 (unpin! transient)
 (unpin! lsp-mode)
+(unpin! (:term ghostel))
