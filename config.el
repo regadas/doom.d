@@ -98,17 +98,28 @@
   ;; Modus styles diff-hl with background colors, but vc-gutter's +pretty flag
   ;; makes those backgrounds transparent.  Use the corresponding Modus colors
   ;; as fringe bitmap foregrounds instead.
-  (defun +my/diff-hl-use-modus-fringe-colors-h ()
-    (when (and (featurep 'modus-themes)
-               (modus-themes-get-current-theme))
-      (set-face-foreground 'diff-hl-insert
-                           (modus-themes-get-color-value 'bg-added-fringe :with-overrides))
-      (set-face-foreground 'diff-hl-change
-                           (modus-themes-get-color-value 'bg-changed-fringe :with-overrides))
-      (set-face-foreground 'diff-hl-delete
-                           (modus-themes-get-color-value 'bg-removed-fringe :with-overrides))))
+  (defun +my/diff-hl-use-modus-fringe-colors-h (&rest _)
+    (let* ((faces '((diff-hl-insert . bg-added-fringe)
+                    (diff-hl-change . bg-changed-fringe)
+                    (diff-hl-delete . bg-removed-fringe)))
+           (modus-theme (and (fboundp 'modus-themes-get-current-theme)
+                             (modus-themes-get-current-theme))))
+      (if (and modus-theme
+               (fboundp 'modus-themes-get-color-value)
+               (eq (car custom-enabled-themes) modus-theme))
+          (dolist (face faces)
+            (face-spec-set
+             (car face)
+             `((t :foreground
+                  ,(modus-themes-get-color-value (cdr face) :with-overrides)))
+             'face-override-spec))
+        (dolist (face faces)
+          (face-spec-set (car face) nil 'face-override-spec)))
+      (when (fboundp '+vc-gutter-make-diff-hl-faces-transparent-h)
+        (+vc-gutter-make-diff-hl-faces-transparent-h))))
 
   (add-hook 'doom-load-theme-hook #'+my/diff-hl-use-modus-fringe-colors-h)
+  (add-hook 'disable-theme-functions #'+my/diff-hl-use-modus-fringe-colors-h)
   (+my/diff-hl-use-modus-fringe-colors-h))
 
 ;;; Projects / VCS -------------------------------------------------------------
