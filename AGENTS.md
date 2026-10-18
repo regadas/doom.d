@@ -39,7 +39,7 @@ When modifying this config, use these Doom-specific macros:
 The configuration prioritizes performance over features:
 - Disabled: lens, breadcrumbs, semantic tokens, LSP folding, file watchers, hover popups, signature help, and most modeline LSP indicators
 - Kept enabled: symbol highlighting, completion detail, and completion kind
-- Java: 8GB heap with ParallelGC, JDT LS 1.57.0
+- Java: 8GB heap with ParallelGC, JDT LS 1.60.0
 
 ### Notable Integrations
 - **Claude Code**: Available under `SPC o c` prefix via claude-code-ide.el
