@@ -29,9 +29,6 @@
 (package! d2-mode)
 (package! just-mode)
 (package! ox-gfm)
-(package! claude-code-ide
-  :recipe (:host github
-           :repo "manzaltu/claude-code-ide.el"))
 (package! consult-gh)
 (package! pr-review)
 

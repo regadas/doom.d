@@ -689,30 +689,6 @@ Use this when jdtls fails to start due to a corrupted workspace."
   (consult-gh-enable-default-keybindings)
   (setq consult-gh-default-clone-directory "~/src/"))
 
-(use-package! claude-code-ide
-  :config
-  (claude-code-ide-emacs-tools-setup)
-  (setq claude-code-ide-use-side-window t
-        claude-code-ide-terminal-backend 'ghostel
-        claude-code-ide-cli-extra-flags "--enable-auto-mode")
-  (map! :leader
-        :prefix ("o c" . "claude")
-        :desc "Start Claude session" "c" #'claude-code-ide
-        :desc "Continue conversation" "C" #'claude-code-ide-continue
-        :desc "Resume session" "r" #'claude-code-ide-resume
-        :desc "Stop Claude session" "q" #'claude-code-ide-stop
-        :desc "Switch to Claude buffer" "b" #'claude-code-ide-switch-to-buffer
-        :desc "List all sessions" "l" #'claude-code-ide-list-sessions
-        :desc "Toggle Claude window" "t" #'claude-code-ide-toggle
-        :desc "Send selection to Claude" "s" #'claude-code-ide-insert-at-mentioned
-        :desc "Send prompt from minibuffer" "p" #'claude-code-ide-send-prompt
-        :desc "Insert newline in Claude" "n" #'claude-code-ide-insert-newline
-        :desc "Send escape key" "e" #'claude-code-ide-send-escape
-        :desc "Main menu (transient)" "m" #'claude-code-ide-menu
-        :desc "Check CLI status" "?" #'claude-code-ide-check-status
-        :desc "Show debug buffer" "d" #'claude-code-ide-show-debug
-        :desc "Clear debug buffer" "D" #'claude-code-ide-clear-debug))
-
 (use-package! agent-shell
   :defer t
   :commands (agent-shell

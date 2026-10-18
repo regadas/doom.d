@@ -33,7 +33,6 @@ When modifying this config, use these Doom-specific macros:
 ### Key Custom Bindings
 - `jj` - Evil escape sequence (instead of ESC)
 - `gh` - Lookup documentation at point
-- `SPC o c` - Claude Code prefix (c=start, r=resume, t=toggle, q=stop)
 
 ### LSP Configuration
 The configuration prioritizes performance over features:
@@ -42,7 +41,6 @@ The configuration prioritizes performance over features:
 - Java: 8GB heap with ParallelGC, JDT LS 1.60.0
 
 ### Notable Integrations
-- **Claude Code**: Available under `SPC o c` prefix via claude-code-ide.el
 - **Kubernetes**: kubel with vterm integration
 - **SQL**: sqlfluff formatter for BigQuery dialect
 - **D2 Diagrams**: d2-mode with formatting support
