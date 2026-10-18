@@ -9,7 +9,7 @@
 
 (setq doom-theme 'modus-operandi
       ;; doom-font (font-spec :family "Aporetic Sans Mono" :size 15)
-      doom-font (font-spec :family "Iosevka SS14" :size 16))
+      doom-font (font-spec :family "Iosevka Nerd Font Mono" :size 16))
 
 (setq mouse-wheel-flip-direction t
       mouse-wheel-tilt-scroll t)
@@ -658,11 +658,15 @@ Use this when jdtls fails to start due to a corrupted workspace."
              agent-shell-pi-start-agent)
   :config
   (setq agent-shell-show-welcome-message nil
+        agent-shell-header-style 'text
         agent-shell-preferred-agent-config 'pi
         ;; Only deliberate context (files, active region). Drop implicit
         ;; `error'/`line' at-point sources — they inject incidental noise
         ;; (e.g. markdownlint diagnostics) into new shells.
         agent-shell-context-sources '(files region))
+  ;; Avoid font fallback changing the header height on blank busy frames.
+  (add-hook! 'agent-shell-mode-hook
+    (face-remap-add-relative 'header-line :family "Iosevka Nerd Font Mono"))
   ;; Claim new shells for the workspace they're created in. Shell buffers
   ;; are often only ever shown via `display-buffer' (never switched to),
   ;; so Doom's `doom-switch-buffer-hook' misses them and they end up in
