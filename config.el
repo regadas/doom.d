@@ -334,6 +334,48 @@ automatically gets a fresh workspace instead of reusing stale metadata."
                                     (or (projectile-project-root)
                                         default-directory)))))))))
 
+  ;; --- Dependency buffer attachment fix -------------------------------------
+  ;; `lsp' normally tries a library workspace only when the file is outside all
+  ;; persisted project roots.  Our per-project cache lives under ~/.emacs.d,
+  ;; which may itself be a persisted root, so dependency buffers otherwise
+  ;; start a new jdtls there instead of reusing the originating project.
+  (defun my/lsp-java--library-workspace-for-file (session file)
+    "Return the active jdtls workspace in SESSION whose library contains FILE."
+    (when (and session file)
+      (seq-find
+       (lambda (workspace)
+         (let* ((client (lsp--workspace-client workspace))
+                (library-folders-fn
+                 (lsp--client-library-folders-fn client)))
+           (and (eq (lsp--client-server-id client) 'jdtls)
+                (lsp--supports-buffer? client)
+                library-folders-fn
+                (seq-some (lambda (folder)
+                            (lsp-f-ancestor-of? folder file))
+                          (funcall library-folders-fn workspace)))))
+       (lsp--session-workspaces session))))
+
+  (defvar my/lsp-java--opening-library-workspace nil
+    "The jdtls library workspace selected while `lsp' opens a dependency file.")
+
+  (defadvice! my/lsp-java--prefer-library-workspace-a (orig-fn &rest args)
+    :around #'lsp
+    (let ((my/lsp-java--opening-library-workspace
+           (and buffer-file-name
+                (my/lsp-java--library-workspace-for-file
+                 (lsp-session) buffer-file-name))))
+      (apply orig-fn args)))
+
+  (defadvice! my/lsp-java--ignore-session-root-for-library-a
+    (orig-fn session file)
+    :around #'lsp-find-session-folder
+    (if (and my/lsp-java--opening-library-workspace
+             buffer-file-name
+             file
+             (lsp-f-same? file buffer-file-name))
+        nil
+      (funcall orig-fn session file)))
+
   ;; --- Filename fix ----------------------------------------------------------
   ;; lsp-java--get-filename can produce cache names without a .java extension
   ;; (second regex branch), so Emacs opens them in fundamental-mode and LSP
@@ -365,10 +407,21 @@ automatically gets a fresh workspace instead of reusing stale metadata."
   (defadvice! my/lsp-java--resolve-uri-a (uri)
     "Resolve jdt:// URI into the per-project cache dir, refreshing stale content."
     :override #'lsp-java--resolve-uri
-    (let* ((workspace (or (and buffer-file-name
-                               (lsp-find-workspace 'jdtls buffer-file-name))
-                          (lsp-find-workspace 'jdtls default-directory)
-                          (lsp-find-workspace 'jdtls nil)))
+    (let* ((workspace
+            (or (and (bound-and-true-p lsp--cur-workspace)
+                     (eq (lsp--client-server-id
+                          (lsp--workspace-client lsp--cur-workspace))
+                         'jdtls)
+                     lsp--cur-workspace)
+                (seq-find
+                 (lambda (ws)
+                   (eq (lsp--client-server-id (lsp--workspace-client ws))
+                       'jdtls))
+                 (bound-and-true-p lsp--buffer-workspaces))
+                (and buffer-file-name
+                     (lsp-find-workspace 'jdtls buffer-file-name))
+                (lsp-find-workspace 'jdtls default-directory)
+                (lsp-find-workspace 'jdtls nil)))
            (root (or (and workspace (lsp--workspace-root workspace))
                      (projectile-project-root)
                      default-directory))
