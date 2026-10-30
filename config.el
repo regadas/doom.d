@@ -703,7 +703,10 @@ Use this when jdtls fails to start due to a corrupted workspace."
         ;; Only deliberate context (files, active region). Drop implicit
         ;; `error'/`line' at-point sources — they inject incidental noise
         ;; (e.g. markdownlint diagnostics) into new shells.
-        agent-shell-context-sources '(files region))
+        agent-shell-context-sources '(files region)
+        ;; Reopen a picked session with its full transcript replayed; the
+        ;; default `minimal' uses session/resume: title only, no history.
+        agent-shell-session-restore-verbosity 'full)
   ;; Avoid font fallback changing the header height on blank busy frames.
   (add-hook! 'agent-shell-mode-hook
     (face-remap-add-relative 'header-line :family "Iosevka Nerd Font Mono"))
