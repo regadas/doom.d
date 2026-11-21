@@ -142,7 +142,7 @@
         forge-alist))
 
 ;; --- Monorepo performance: lightweight magit for large repos ---
-(defvar +my/magit-large-repo-dirs nil
+(defvar +my/magit-large-repo-dirs '("~/src/spotify/services-pilot-worktrees/")
   "List of directory paths where magit should use lightweight settings.")
 
 (defun +my/magit-large-repo-p ()
