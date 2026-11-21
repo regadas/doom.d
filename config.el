@@ -602,16 +602,43 @@ workspace."
   (setq pr-review-forges-alist
         '(("ghe.spotify.net" . (github "ghe.spotify.net/api/v3" nil))
           ("github.com" . (github nil nil))
-          ("gitlab.com" . (gitlab nil nil)))
-        ;; Use gh CLI token (classic OAuth with repo scope) — fine-grained
-        ;; tokens don't support the /compare/ endpoint on GHE 3.19.
-        pr-review-ghub-auth-name
-        (string-trim (shell-command-to-string
-                      "gh auth token --hostname ghe.spotify.net"))))
 
 ;; ;; PR Inbox
 ;; (use-package! pr-inbox
 ;;   :commands (pr-inbox))
+          ("gitlab.com" . (gitlab nil nil))))
+  ;; Use gh CLI token (classic OAuth with repo scope) — fine-grained
+  ;; tokens don't support the /compare/ endpoint on GHE 3.19.  The
+  ;; token must be sent to ghe.spotify.net ONLY; every other forge
+  ;; uses normal ghub auth-source credentials.
+  (defvar my/pr-review-ghe-token
+    (let ((token (with-temp-buffer
+                   ;; call-process signals file-error when gh itself is
+                   ;; missing, and returns a signal-description STRING
+                   ;; (not a number) when the child dies by a signal — so
+                   ;; use (eq 0 …), which tolerates both, never signals,
+                   ;; and only accepts a genuine zero exit status.
+                   (when (eq 0 (condition-case nil
+                                   (call-process "gh" nil '(t nil) nil
+                                                 "auth" "token"
+                                                 "--hostname" "ghe.spotify.net")
+                                 (error -1)))
+                     (string-trim (buffer-string))))))
+      (unless (string-empty-p (or token "")) token))
+    "gh CLI token for ghe.spotify.net, or nil when gh is missing, fails,
+or prints no token (GHE then falls back to auth-source too).")
+  (defadvice! my/pr-review--ghub-auth-ghe-only-a (orig-fn)
+    "Send the gh CLI token only on ghe.spotify.net requests.
+All other hosts — and GHE itself when the token is unavailable —
+keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
+    :around #'pr-review--ghub-common-request-args
+    (let* ((args (funcall orig-fn))
+           (host (plist-get args :host)))
+      (if (and my/pr-review-ghe-token
+               host
+               (string-prefix-p "ghe.spotify.net" host))
+          (plist-put args :auth my/pr-review-ghe-token)
+        args))))
 
 ;; SQL
 (use-package! sql-bigquery
