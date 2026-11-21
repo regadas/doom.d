@@ -36,17 +36,17 @@ When modifying this config, use these Doom-specific macros:
 
 ### LSP Configuration
 The configuration prioritizes performance over features:
-- Disabled: lens, breadcrumbs, semantic tokens, LSP folding, file watchers, hover popups, signature help, and most modeline LSP indicators
+- Disabled: lens, breadcrumbs, semantic tokens, LSP folding, hover popups, signature help, and most modeline LSP indicators; file watchers are disabled globally but re-enabled for jdtls
 - Kept enabled: symbol highlighting, completion detail, and completion kind
 - Java: 8GB heap with ParallelGC, JDT LS 1.60.0
 
 ### Notable Integrations
-- **Kubernetes**: kubel with vterm integration
-- **SQL**: sqlfluff formatter for BigQuery dialect
+- **Kubernetes**: kubel
+- **SQL**: sqlfluff formatter with no dialect on the command line; the dialect comes from each repo's `.sqlfluff` when present
 - **D2 Diagrams**: d2-mode with formatting support
 - **Dhall**: LSP support with freeze/lint commands under localleader
 
 ### Project Structure Expectations
-- Projects in ~/projects/, ~/projects/spotify/, ~/projects/experiments/
-- Org files in ~/projects/brain-dump
+- Projects in ~/src/, ~/src/spotify/, ~/src/experiments/
+- Org files in ~/src/brain-dump
 - Uses .projectile and .git for project root detection
