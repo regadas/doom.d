@@ -18,9 +18,7 @@
   (setq modus-themes-italic-constructs t
         modus-themes-bold-constructs t
         modus-themes-variable-pitch-ui t
-        modus-themes-mixed-fonts t
-        modus-themes-fringes 'subtle
-        modus-themes-prompts '(extrabold italic)))
+        modus-themes-mixed-fonts t))
 
 (setq inhibit-compacting-font-caches t
       auto-save-default t
@@ -60,28 +58,10 @@
         dired-listing-switches "-lat")  ; sort by date
   (add-hook! 'dired-mode-hook #'dired-hide-details-mode))
 
-;; (after! treemacs
-;;   ;; `treemacs-project-follow-mode' lives in a separate Treemacs feature, and
-;;   ;; passing nil toggles minor modes; use -1 to disable it explicitly.
-;;   (when (require 'treemacs-project-follow-mode nil t)
-;;     (treemacs-project-follow-mode -1))
-;;   (treemacs-git-mode 'deferred)
-;;   (setq treemacs-collapse-dirs 10
-;;         treemacs-silent-refresh t
-;;         treemacs-silent-filewatch t
-;;         treemacs-file-event-delay 2000
-;;         treemacs-file-follow-delay 0.2
-;;         treemacs-indentation 1))
-
 (after! doom-modeline
   (setq doom-modeline-major-mode-icon t
         doom-modeline-hud t               ; top-of-window position indicator
-        doom-modeline-buffer-encoding 'nondefault)  ; only show when non-utf-8
-
-  ;; Enable features
-  (doom-modeline-def-modeline 'main
-    '(bar modals workspace-name window-number matches buffer-info remote-host buffer-position word-count parrot selection-info)
-    '(misc-info grip github debug repl lsp minor-modes input-method indent-info buffer-encoding major-mode process vcs)))
+        doom-modeline-buffer-encoding 'nondefault))  ; only show when non-utf-8
 
 (use-package! nyan-mode
   :after doom-modeline
@@ -227,7 +207,6 @@
         lsp-completion-show-kind t
 
         ;; Core settings
-        lsp-use-plists t
         ;; lsp-log-io nil
         lsp-auto-guess-root t
         lsp-idle-delay 0.25
@@ -584,7 +563,6 @@ workspace."
   :init
   (add-hook! 'dhall-mode-local-vars-hook :append #'lsp!)
   :config
-  (require 'reformatter)
   (reformatter-define dhall-freeze-all
     :program dhall-command
     :args '("freeze" "--all")
@@ -602,10 +580,6 @@ workspace."
   (setq pr-review-forges-alist
         '(("ghe.spotify.net" . (github "ghe.spotify.net/api/v3" nil))
           ("github.com" . (github nil nil))
-
-;; ;; PR Inbox
-;; (use-package! pr-inbox
-;;   :commands (pr-inbox))
           ("gitlab.com" . (gitlab nil nil))))
   ;; Use gh CLI token (classic OAuth with repo scope) — fine-grained
   ;; tokens don't support the /compare/ endpoint on GHE 3.19.  The
@@ -731,7 +705,6 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
   (add-hook 'ghostel-mode-hook #'+ghostel/add-to-workspace-h))
 
 (use-package! kubel
-  :defer t
   :commands (kubel))
 
 ;; accept completion from copilot and fallback to corfu

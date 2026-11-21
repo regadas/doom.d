@@ -19,12 +19,6 @@
            :repo "Titan-C/org-cv"))
 (package! sql-trino)
 (package! sql-bigquery)
-;; (package! pr-inbox
-;;   :recipe (:local-repo "lisp/pr-inbox"
-;;            :build (:not compile)))
-(package! undo-hl
-  :recipe (:host github
-           :repo "casouri/undo-hl"))
 (package! zoom)
 (package! d2-mode)
 (package! just-mode)
