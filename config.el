@@ -283,11 +283,18 @@ automatically gets a fresh workspace instead of reusing stale metadata."
      (or (projectile-project-root) default-directory)))
 
   (defun my/lsp-java--remove-stale-lock (ws-dir)
-    "Remove a stale .metadata/.lock file in WS-DIR if no jdtls owns it."
+    "Remove a stale .metadata/.lock file in WS-DIR if no jdtls owns it.
+Limit: only THIS Emacs session's workspaces are visible; a lock held
+by another Emacs instance cannot be detected (and will be removed)."
     (let ((lock (expand-file-name ".metadata/.lock" ws-dir)))
       (when (and (file-exists-p lock)
                  (not (seq-some (lambda (ws)
-                                  (string-prefix-p ws-dir (lsp--workspace-root ws)))
+                                  (and (eq (lsp--client-server-id
+                                            (lsp--workspace-client ws))
+                                           'jdtls)
+                                       (string= ws-dir
+                                                (my/lsp-java--workspace-dir-for-root
+                                                 (lsp--workspace-root ws)))))
                                 (lsp--session-workspaces (lsp-session)))))
         (delete-file lock)
         (message "Removed stale lock: %s" lock))))
@@ -311,28 +318,31 @@ automatically gets a fresh workspace instead of reusing stale metadata."
   ;; `cl-struct-slot-value' has a `gv-expander' baked into cl-macs (which is
   ;; always loaded before any `setf' can expand), so it is resolvable on every
   ;; macro-expansion and avoids the race entirely.
-  (require 'cl-lib)
-  (when-let ((jdtls-client (gethash 'jdtls lsp-clients)))
-    ;; (1) Disable multi-root
-    (setf (cl-struct-slot-value 'lsp--client 'multi-root jdtls-client) nil)
+  ;; A failing slot patch must not silently skip the rest of this body (every
+  ;; project server would then share one workspace) — warn and carry on.
+  (condition-case err
+      (when-let ((jdtls-client (gethash 'jdtls lsp-clients)))
+        ;; (1) Disable multi-root
+        (setf (cl-struct-slot-value 'lsp--client 'multi-root jdtls-client) nil)
 
-    ;; (2) Per-project library/cache folder
-    (setf (cl-struct-slot-value 'lsp--client 'library-folders-fn jdtls-client)
-          (lambda (workspace)
-            (list (expand-file-name
-                   ".cache/"
-                   (my/lsp-java--workspace-dir-for-root
-                    (lsp--workspace-root workspace))))))
+        ;; (2) Per-project library/cache folder
+        (setf (cl-struct-slot-value 'lsp--client 'library-folders-fn jdtls-client)
+              (lambda (workspace)
+                (list (expand-file-name
+                       ".cache/"
+                       (my/lsp-java--workspace-dir-for-root
+                        (lsp--workspace-root workspace))))))
 
-    ;; (3) Isolated workspaceFolders in initialization-options
-    (let ((orig-init-fn (lsp--client-initialization-options jdtls-client)))
-      (setf (cl-struct-slot-value 'lsp--client 'initialization-options jdtls-client)
-            (lambda ()
-              (let ((opts (funcall orig-init-fn)))
-                (plist-put opts :workspaceFolders
-                           (vector (lsp--path-to-uri
-                                    (or (projectile-project-root)
-                                        default-directory)))))))))
+        ;; (3) Isolated workspaceFolders in initialization-options
+        (let ((orig-init-fn (lsp--client-initialization-options jdtls-client)))
+          (setf (cl-struct-slot-value 'lsp--client 'initialization-options jdtls-client)
+                (lambda ()
+                  (let ((opts (funcall orig-init-fn)))
+                    (plist-put opts :workspaceFolders
+                               (vector (lsp--path-to-uri
+                                        (or (projectile-project-root)
+                                            default-directory)))))))))
+    (error (warn "jdtls client patch failed: %S" err)))
 
   ;; --- Dependency buffer attachment fix -------------------------------------
   ;; `lsp' normally tries a library workspace only when the file is outside all
@@ -367,14 +377,14 @@ automatically gets a fresh workspace instead of reusing stale metadata."
       (apply orig-fn args)))
 
   (defadvice! my/lsp-java--ignore-session-root-for-library-a
-    (orig-fn session file)
+    (orig-fn session file &rest args)
     :around #'lsp-find-session-folder
     (if (and my/lsp-java--opening-library-workspace
              buffer-file-name
              file
              (lsp-f-same? file buffer-file-name))
         nil
-      (funcall orig-fn session file)))
+      (apply orig-fn session file args)))
 
   ;; --- Filename fix ----------------------------------------------------------
   ;; lsp-java--get-filename can produce cache names without a .java extension
@@ -427,7 +437,13 @@ automatically gets a fresh workspace instead of reusing stale metadata."
                      default-directory))
            (cache-dir (expand-file-name
                        ".cache/" (my/lsp-java--workspace-dir-for-root root)))
-           (file-location (expand-file-name (lsp-java--get-filename uri) cache-dir))
+           ;; `lsp-java--get-filename' drops the JAR/version component, so
+           ;; two versions of one class would share a single cache file;
+           ;; putting the URI's md5 in a per-URI subdirectory keeps the
+           ;; visible filename readable while staying unique per URI.
+           (file-location (expand-file-name
+                           (lsp-java--get-filename uri)
+                           (expand-file-name (md5 uri) cache-dir)))
            (last-fetch (gethash uri my/lsp-java--resolve-uri-times))
            (fresh (and last-fetch
                        (file-readable-p file-location)
@@ -475,43 +491,61 @@ automatically gets a fresh workspace instead of reusing stale metadata."
                         'jdtls)))))
       (apply orig-fn args)))
 
-  ;; --- Workspace-folders isolation -------------------------------------------
-  ;; The stock lsp-java--workspace-folders returns ALL session folders, leaking
-  ;; every project's root to every jdtls instance.  Return only the current
-  ;; workspace's root so jdtls never sees unrelated projects.
-  (defadvice! my/lsp-java--workspace-folders-a (workspace)
-    "Return only WORKSPACE's own root folder."
-    :override #'lsp-java--workspace-folders
-    (if workspace
-        (list (lsp--workspace-root workspace))
-      (list (or (projectile-project-root) default-directory))))
-
   ;; --- Command builder advice ------------------------------------------------
   ;; Bind both lsp-java-workspace-dir and lsp-java-workspace-cache-dir to
   ;; per-project paths around the server command construction.
-  (when (fboundp 'lsp-java--ls-command)
-    (defadvice! my/lsp-java--ls-command-a (orig-fn)
-      "Bind `lsp-java-workspace-dir' and `lsp-java-workspace-cache-dir'
+  (if (fboundp 'lsp-java--ls-command)
+      (defadvice! my/lsp-java--ls-command-a (orig-fn)
+        "Bind `lsp-java-workspace-dir' and `lsp-java-workspace-cache-dir'
 to per-project paths and remove any stale lock beforehand."
-      :around #'lsp-java--ls-command
-      (let* ((lsp-java-workspace-dir (my/lsp-java--workspace-dir))
-             (lsp-java-workspace-cache-dir (expand-file-name ".cache/"
-                                                             lsp-java-workspace-dir)))
-        (when (file-directory-p lsp-java-workspace-dir)
-          (my/lsp-java--remove-stale-lock lsp-java-workspace-dir))
-        (funcall orig-fn))))
+        :around #'lsp-java--ls-command
+        (let* ((lsp-java-workspace-dir (my/lsp-java--workspace-dir))
+               (lsp-java-workspace-cache-dir (expand-file-name ".cache/"
+                                                               lsp-java-workspace-dir)))
+          (when (file-directory-p lsp-java-workspace-dir)
+            (my/lsp-java--remove-stale-lock lsp-java-workspace-dir))
+          (funcall orig-fn)))
+    (warn "lsp-java--ls-command missing; per-project jdtls workspace advice not installed"))
 
   ;; --- Interactive clean command ---------------------------------------------
   (defun my/lsp-java-clean-workspace ()
-    "Delete the current project's jdtls workspace and restart LSP.
-Use this when jdtls fails to start due to a corrupted workspace."
+    "Delete the current project's jdtls workspace, first shutting down
+any live jdtls that uses it.  A fresh jdtls starts on the next Java
+file open.  Use this when jdtls fails to start due to a corrupted
+workspace."
     (interactive)
     (let ((ws-dir (my/lsp-java--workspace-dir)))
       (unless (file-directory-p ws-dir)
         (user-error "No jdtls workspace directory found at %s" ws-dir))
       (when (y-or-n-p (format "Delete jdtls workspace %s?" ws-dir))
-        (delete-directory ws-dir t)
-        (message "Deleted %s. Reopen a Java file to restart jdtls." ws-dir)
+        (let ((live-ws
+               (seq-filter
+                (lambda (ws)
+                  (and (eq (lsp--client-server-id
+                            (lsp--workspace-client ws))
+                           'jdtls)
+                       (string= ws-dir
+                                (my/lsp-java--workspace-dir-for-root
+                                 (lsp--workspace-root ws)))))
+                (lsp--session-workspaces (lsp-session)))))
+          (dolist (ws live-ws)
+            (lsp-workspace-shutdown ws))
+          ;; Bounded wait for the server processes to exit: deleting under a
+          ;; live jdtls corrupts its workspace mid-delete, so abort if any
+          ;; process survived the wait.
+          (let ((deadline (+ (float-time) 10)))
+            (while (and live-ws
+                        (< (float-time) deadline)
+                        (seq-some (lambda (ws)
+                                    (process-live-p (lsp--workspace-proc ws)))
+                                  live-ws))
+              (accept-process-output nil 0.1)))
+          (when (seq-some (lambda (ws)
+                            (process-live-p (lsp--workspace-proc ws)))
+                          live-ws)
+            (user-error "jdtls did not exit within 10s; workspace not deleted — kill it manually and retry"))
+          (delete-directory ws-dir t)
+          (message "Deleted %s. A fresh jdtls starts on the next Java file open." ws-dir))
         (when (bound-and-true-p lsp-mode)
           (lsp-disconnect))))))
 
