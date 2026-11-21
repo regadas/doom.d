@@ -729,7 +729,8 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
              agent-shell-anthropic-start-claude-code
              agent-shell-google-start-gemini
              agent-shell-openai-start-codex
-             agent-shell-pi-start-agent)
+             agent-shell-pi-start-agent
+             agent-shell-switch-buffer)
   :config
   (setq agent-shell-show-welcome-message nil
         agent-shell-header-style 'text
@@ -741,16 +742,36 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
         ;; Reopen a picked session with its full transcript replayed; the
         ;; default `minimal' uses session/resume: title only, no history.
         agent-shell-session-restore-verbosity 'full)
-  ;; Avoid font fallback changing the header height on blank busy frames.
+  ;; Pin both header faces so blank busy frames keep their height without focus.
   (add-hook! 'agent-shell-mode-hook
-    (face-remap-add-relative 'header-line :family "Iosevka Nerd Font Mono"))
+    (face-remap-add-relative 'header-line :family "Iosevka Nerd Font Mono")
+    (face-remap-add-relative 'header-line-inactive :family "Iosevka Nerd Font Mono"))
   ;; Claim new shells for the workspace they're created in. Shell buffers
   ;; are often only ever shown via `display-buffer' (never switched to),
   ;; so Doom's `doom-switch-buffer-hook' misses them and they end up in
-  ;; no persp — which breaks the manager's workspace-aware goto below.
+  ;; no persp.
   (when (modulep! :ui workspaces)
     (add-hook 'agent-shell-mode-hook #'+workspaces-add-current-buffer-h))
-  (require 'acp))
+  ;; Switch to the workspace owning the selected shell before displaying it,
+  ;; so `switch-to-buffer' doesn't pull another workspace's shell into this one.
+  (defadvice! my/agent-shell-switch-buffer-workspace-a (&rest _)
+    "Switch to the workspace containing the chosen agent-shell buffer."
+    :override #'agent-shell-switch-buffer
+    (let* ((shell-buffer (agent-shell--read-shell-buffer
+                          :prompt "Switch to agent-shell buffer: "))
+           (target-buffer (or (when (bound-and-true-p agent-shell-prefer-viewport-interaction)
+                                (agent-shell-viewport--buffer
+                                 :shell-buffer shell-buffer
+                                 :existing-only t))
+                              shell-buffer)))
+      (when (and (bound-and-true-p persp-mode)
+                 (not (+workspace-contains-buffer-p shell-buffer)))
+        (when-let* ((ws (cl-find-if (lambda (w) (+workspace-contains-buffer-p shell-buffer w))
+                                    (+workspace-list))))
+          (+workspace-switch (persp-name ws))))
+      (if-let* ((win (get-buffer-window target-buffer)))
+          (select-window win)
+        (switch-to-buffer target-buffer)))))
 
 (use-package! agent-shell-macext
   :after agent-shell
@@ -759,63 +780,6 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
   (agent-shell-macext-file-copy-policy 'auto)
   (agent-shell-macext-notifications t)
   (agent-shell-macext-notify-current-buffer nil))
-
-(use-package! agent-shell-manager
-  :defer t
-  :commands (agent-shell-manager-toggle)
-  :after agent-shell
-  :config
-  (setq agent-shell-manager-side 'bottom)
-  ;; Keep Doom's leader and window bindings available in the manager while
-  ;; preserving its native management keys in Evil normal state.
-  (evil-set-initial-state 'agent-shell-manager-mode 'normal)
-  (map! :map agent-shell-manager-mode-map
-        :n "RET"     #'agent-shell-manager-goto
-        :n "g"       #'agent-shell-manager-refresh
-        :n "k"       #'agent-shell-manager-kill
-        :n "c"       #'agent-shell-manager-new
-        :n "r"       #'agent-shell-manager-restart
-        :n "d"       #'agent-shell-manager-delete-killed
-        :n "m"       #'agent-shell-manager-set-mode
-        :n "M"       #'agent-shell-manager-set-model
-        :n "t"       #'agent-shell-manager-view-traffic
-        :n "l"       #'agent-shell-manager-toggle-logging
-        :n "C-c C-c" #'agent-shell-manager-interrupt
-        :n "q"       #'quit-window)
-  ;; Make the manager workspace-aware: `agent-shell-manager-goto' only
-  ;; looks at windows in the current workspace, so jumping to a shell
-  ;; that lives in another persp-mode workspace displays it in the wrong
-  ;; one. Instead, switch to the workspace that owns the buffer first,
-  ;; then select/reuse a window there.
-  (defadvice! my/agent-shell-manager-goto-workspace-a (fn &rest args)
-    "Switch to the workspace containing the shell buffer before visiting it."
-    :around #'agent-shell-manager-goto
-    (let ((buffer (tabulated-list-get-id)))
-      (if-let* (((and buffer
-                      (buffer-live-p buffer)
-                      (bound-and-true-p persp-mode)
-                      (not (+workspace-contains-buffer-p buffer))))
-                (workspace
-                 (cl-find-if (lambda (ws) (+workspace-contains-buffer-p buffer ws))
-                             (+workspace-list))))
-          (progn
-            (agent-shell-manager--hide-window)
-            (+workspace-switch (persp-name workspace))
-            ;; Replicate goto's window selection inside the target workspace.
-            (if-let* ((win (get-buffer-window buffer)))
-                (select-window win)
-              (if-let* ((agent-win
-                         (cl-find-if
-                          (lambda (w)
-                            (with-current-buffer (window-buffer w)
-                              (derived-mode-p 'agent-shell-mode)))
-                          (window-list))))
-                  (progn
-                    (set-window-buffer agent-win buffer)
-                    (select-window agent-win))
-                (agent-shell--display-buffer buffer))))
-        ;; In current workspace (or no owning workspace): default behavior.
-        (apply fn args)))))
 
 (use-package! agent-review
   :defer t
@@ -829,7 +793,7 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
       :desc "Start Gemini (ACP)"       "g" #'agent-shell-google-start-gemini
       :desc "Start Codex (ACP)"        "x" #'agent-shell-openai-start-codex
       :desc "Start Pi (ACP)"           "p" #'agent-shell-pi-start-agent
-      :desc "Toggle shell manager"     "m" #'agent-shell-manager-toggle
+      :desc "Switch buffer"            "b" #'agent-shell-switch-buffer
       :desc "Review git changes"       "r" #'agent-review)
 
 (use-package! rainbow-csv
