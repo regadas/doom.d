@@ -730,7 +730,11 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
              agent-shell-google-start-gemini
              agent-shell-openai-start-codex
              agent-shell-pi-start-agent
-             agent-shell-switch-buffer)
+             agent-shell-switch-buffer
+             agent-shell-new-worktree-shell
+             agent-shell-fork
+             agent-shell-send-dwim
+             agent-shell-toggle)
   :config
   (setq agent-shell-show-welcome-message nil
         agent-shell-header-style 'text
@@ -741,11 +745,17 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
         agent-shell-context-sources '(files region)
         ;; Reopen a picked session with its full transcript replayed; the
         ;; default `minimal' uses session/resume: title only, no history.
-        agent-shell-session-restore-verbosity 'full)
-  ;; Pin both header faces so blank busy frames keep their height without focus.
-  (add-hook! 'agent-shell-mode-hook
-    (face-remap-add-relative 'header-line :family "Iosevka Nerd Font Mono")
-    (face-remap-add-relative 'header-line-inactive :family "Iosevka Nerd Font Mono"))
+        agent-shell-session-restore-verbosity 'full
+        ;; Compact one-line usage at turn end + cumulative cost in header.
+        agent-shell-show-usage-at-turn-end t
+        agent-shell-usage-expand-by-default t
+        agent-shell-usage-format-function #'agent-shell-usage-one-line-format
+        agent-shell-show-cost-indicator t
+        ;; Avoid slow project file scans on `@' in large repos; `/' still pops
+        ;; and `@' stays available on demand via `completion-at-point'.
+        agent-shell-file-completion-enabled nil
+        ;; Static ASCII text avoids blank/fallback frames shifting header height.
+        agent-shell-busy-indicator-frames "(busy)")
   ;; Claim new shells for the workspace they're created in. Shell buffers
   ;; are often only ever shown via `display-buffer' (never switched to),
   ;; so Doom's `doom-switch-buffer-hook' misses them and they end up in
@@ -789,12 +799,16 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
 (map! :leader
       :prefix ("o c a" . "agent-shell")
       :desc "Start agent-shell"        "a" #'agent-shell
-      :desc "Start Claude Code (ACP)"  "c" #'agent-shell-anthropic-start-claude-code
-      :desc "Start Gemini (ACP)"       "g" #'agent-shell-google-start-gemini
-      :desc "Start Codex (ACP)"        "x" #'agent-shell-openai-start-codex
-      :desc "Start Pi (ACP)"           "p" #'agent-shell-pi-start-agent
       :desc "Switch buffer"            "b" #'agent-shell-switch-buffer
-      :desc "Review git changes"       "r" #'agent-review)
+      :desc "Start Claude Code (ACP)"  "c" #'agent-shell-anthropic-start-claude-code
+      :desc "Fork session"             "f" #'agent-shell-fork
+      :desc "Start Gemini (ACP)"       "g" #'agent-shell-google-start-gemini
+      :desc "Start Pi (ACP)"           "p" #'agent-shell-pi-start-agent
+      :desc "Review git changes"       "r" #'agent-review
+      :desc "Send DWIM"                "s" #'agent-shell-send-dwim
+      :desc "Toggle shell"             "t" #'agent-shell-toggle
+      :desc "New worktree shell"       "w" #'agent-shell-new-worktree-shell
+      :desc "Start Codex (ACP)"        "x" #'agent-shell-openai-start-codex)
 
 (use-package! rainbow-csv
   :hook ((csv-mode . rainbow-csv-mode)
