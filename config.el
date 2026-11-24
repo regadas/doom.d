@@ -791,6 +791,160 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
   (agent-shell-macext-notifications t)
   (agent-shell-macext-notify-current-buffer nil))
 
+(use-package! agent-shell-manager
+  :defer t
+  :commands (agent-shell-manager-toggle)
+  :after agent-shell
+  :config
+  (setq agent-shell-manager-side 'bottom)
+  ;; Keep Doom's leader and window bindings available in the manager while
+  ;; preserving its native management keys in Evil normal state.
+  (evil-set-initial-state 'agent-shell-manager-mode 'normal)
+  (map! :map agent-shell-manager-mode-map
+        :n "RET"     #'agent-shell-manager-goto
+        :n "g"       #'agent-shell-manager-refresh
+        :n "k"       #'agent-shell-manager-kill
+        :n "c"       #'agent-shell-manager-new
+        :n "r"       #'agent-shell-manager-restart
+        :n "d"       #'agent-shell-manager-delete-killed
+        :n "m"       #'agent-shell-manager-set-mode
+        :n "M"       #'agent-shell-manager-set-model
+        :n "t"       #'agent-shell-manager-view-traffic
+        :n "l"       #'agent-shell-manager-toggle-logging
+        :n "C-c C-c" #'agent-shell-manager-interrupt
+        :n "q"       #'quit-window)
+  ;; Surface session titles right after Status (index 1 stays Status so
+  ;; `agent-shell-manager--entries' killed-to-bottom sort keeps working).
+  (defvar-local my/agent-shell-manager--subscribed nil)
+  (defun my/agent-shell-manager--watch-shell (&optional buf)
+    "Refresh the manager immediately on status/title/model events in BUF."
+    (let ((buf (or buf (current-buffer))))
+      (when (and (buffer-live-p buf)
+                 (with-current-buffer buf
+                   (and (derived-mode-p 'agent-shell-mode)
+                        (boundp 'agent-shell--state)
+                        (not my/agent-shell-manager--subscribed))))
+        (with-current-buffer buf
+          (setq my/agent-shell-manager--subscribed t)
+          (agent-shell-subscribe-to
+           :shell-buffer buf
+           :on-event
+           (lambda (ev)
+             (when (memq (map-elt ev :event)
+                         '(input-submitted turn-complete permission-request
+                           permission-response config-option-update
+                           session-title-changed init-finished error clean-up))
+               (run-at-time 0 nil #'agent-shell-manager-refresh))))))))
+  (add-hook 'agent-shell-mode-hook #'my/agent-shell-manager--watch-shell)
+  (add-hook! 'agent-shell-manager-mode-hook
+    (setq tabulated-list-format
+          [("Buffer" 32 t)
+           ("Status" 11 t)
+           ("Title" 45 t)
+           ("Mode" 12 t)
+           ("Model" 24 t)
+           ("Perms" 7 t)
+           ("Path" 20 t)])
+    (tabulated-list-init-header)
+    ;; Upstream wipes buffer-locals before cancelling its old timer on re-entry.
+    (dolist (tm (copy-sequence timer-list))
+      (when (and (eq (timer--function tm) #'agent-shell-manager-refresh)
+                 (not (eq tm agent-shell-manager--refresh-timer)))
+        (cancel-timer tm)))
+    (dolist (buf (agent-shell-buffers))
+      (my/agent-shell-manager--watch-shell buf)))
+  ;; Upstream treats any non-empty `:tool-calls' (even completed ones) as
+  ;; "working" and returns "unknown" before `:session :id' is set. Delegate
+  ;; live status to `agent-shell-status' instead.
+  (defadvice! my/agent-shell-manager-get-status-a (buffer)
+    "Derive BUFFER status from live processes and `agent-shell-status'."
+    :override #'agent-shell-manager--get-status
+    (with-current-buffer buffer
+      (if (not (boundp 'agent-shell--state))
+          "unknown"
+        (let* ((state agent-shell--state)
+               (acp-proc (map-nested-elt state '(:client :process)))
+               (acp-alive (and (processp acp-proc) (process-live-p acp-proc)))
+               (comint-proc (get-buffer-process (current-buffer)))
+               (comint-alive (and (processp comint-proc) (process-live-p comint-proc))))
+          (cond
+           ((or (not comint-alive)
+                (and (map-elt state :client) (not acp-alive)))
+            "killed")
+           ((not (map-nested-elt state '(:session :id)))
+            "initializing")
+           (t
+            (pcase (agent-shell-status)
+              ('blocked "waiting")
+              ('busy "working")
+              ('ready "ready")
+              (_ "unknown"))))))))
+  ;; Upstream only reads legacy `:session :model-id'/`:mode-id'; modern ACP
+  ;; agents (like Pi) report these via `:config-options'.
+  (defadvice! my/agent-shell-manager-get-model-a (buffer)
+    "Return current model name for BUFFER, supporting ACP `:config-options'."
+    :override #'agent-shell-manager--get-model-id
+    (with-current-buffer buffer
+      (or (and (boundp 'agent-shell--state)
+               (agent-shell-get-model-name agent-shell--state))
+          "-")))
+  (defadvice! my/agent-shell-manager-get-mode-a (buffer)
+    "Return current session mode name for BUFFER, supporting ACP `:config-options'."
+    :override #'agent-shell-manager--get-session-mode
+    (with-current-buffer buffer
+      (or (and (boundp 'agent-shell--state)
+               (agent-shell-get-mode-name agent-shell--state))
+          "-")))
+  (defadvice! my/agent-shell-manager-entries-title-a (entries)
+    "Insert each buffer's session title as the third column."
+    :filter-return #'agent-shell-manager--entries
+    (mapcar (lambda (entry)
+              (let* ((buf (car entry))
+                     (cols (cadr entry))
+                     (raw (and (buffer-live-p buf)
+                               (with-current-buffer buf
+                                 (and (boundp 'agent-shell--state)
+                                      (map-nested-elt agent-shell--state
+                                                      '(:session :title))))))
+                     (title (if (and (stringp raw)
+                                     (not (string-empty-p (string-trim raw))))
+                                (propertize (car (split-string (string-trim raw) "\n" t))
+                                            'face 'agent-shell-session-title)
+                              "-")))
+                (list buf (vconcat (seq-subseq cols 0 2)
+                                   (vector title)
+                                   (seq-subseq cols 2)))))
+            entries))
+  ;; Switch to the workspace owning the selected shell before visiting it,
+  ;; since `agent-shell-manager-goto' only inspects windows in the current one.
+  (defadvice! my/agent-shell-manager-goto-workspace-a (fn &rest args)
+    "Switch to the workspace containing the shell buffer before visiting it."
+    :around #'agent-shell-manager-goto
+    (let ((buffer (tabulated-list-get-id)))
+      (if-let* (((and buffer
+                      (buffer-live-p buffer)
+                      (bound-and-true-p persp-mode)
+                      (not (+workspace-contains-buffer-p buffer))))
+                (workspace
+                 (cl-find-if (lambda (ws) (+workspace-contains-buffer-p buffer ws))
+                             (+workspace-list))))
+          (progn
+            (agent-shell-manager--hide-window)
+            (+workspace-switch (persp-name workspace))
+            (if-let* ((win (get-buffer-window buffer)))
+                (select-window win)
+              (if-let* ((agent-win
+                         (cl-find-if
+                          (lambda (w)
+                            (with-current-buffer (window-buffer w)
+                              (derived-mode-p 'agent-shell-mode)))
+                          (window-list))))
+                  (progn
+                    (set-window-buffer agent-win buffer)
+                    (select-window agent-win))
+                (agent-shell--display-buffer buffer))))
+        (apply fn args)))))
+
 (use-package! agent-review
   :defer t
   :commands (agent-review)
@@ -803,6 +957,7 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
       :desc "Start Claude Code (ACP)"  "c" #'agent-shell-anthropic-start-claude-code
       :desc "Fork session"             "f" #'agent-shell-fork
       :desc "Start Gemini (ACP)"       "g" #'agent-shell-google-start-gemini
+      :desc "Toggle shell manager"     "m" #'agent-shell-manager-toggle
       :desc "Start Pi (ACP)"           "p" #'agent-shell-pi-start-agent
       :desc "Review git changes"       "r" #'agent-review
       :desc "Send DWIM"                "s" #'agent-shell-send-dwim

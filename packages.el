@@ -40,6 +40,10 @@
   :recipe (:host github
            :repo "cxa/agent-shell-macext"
            :files ("*.el")))
+(package! agent-shell-manager
+  :recipe (:host github
+           :repo "jethrokuan/agent-shell-manager"
+           :files ("*.el")))
 (package! agent-review
   :recipe (:host github
            :repo "nineluj/agent-review"
