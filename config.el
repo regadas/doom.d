@@ -9,7 +9,7 @@
 
 (setq doom-theme 'modus-operandi
       ;; doom-font (font-spec :family "Aporetic Sans Mono" :size 15)
-      doom-font (font-spec :family "Iosevka Nerd Font Mono" :size 16))
+      doom-font (font-spec :family "Iosevka Nerd Font Mono" :size 15))
 
 (setq mouse-wheel-flip-direction t
       mouse-wheel-tilt-scroll t)
