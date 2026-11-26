@@ -46,8 +46,7 @@
 (map! (:when (modulep! :tools lookup)
         :nv "gh"   #'+lookup/documentation))
 
-(use-package! zoom
-  :config
+(after! zoom
   (setq zoom-size '(0.678 . 0.678)))
 
 (after! embark
@@ -249,17 +248,67 @@ Includes the JDT LS version in the hash so upgrading the server
 automatically gets a fresh workspace instead of reusing stale metadata."
     (let* ((canonical-root (directory-file-name (file-truename root)))
            (version (and (boundp 'lsp-java-jdt-download-url)
-                         (when (string-match "/\\([0-9][0-9.]*\\)/" lsp-java-jdt-download-url)
-                           (match-string 1 lsp-java-jdt-download-url))))
+                         (save-match-data
+                           (when (string-match "/\\([0-9][0-9.]*\\)/" lsp-java-jdt-download-url)
+                             (match-string 1 lsp-java-jdt-download-url)))))
            (hash (md5 (concat canonical-root "\0" (or version "unknown")))))
       (expand-file-name hash
                         (expand-file-name "jdtls-workspaces"
                                           lsp-server-install-dir))))
 
+  (defvar my/lsp-java--starting-root nil
+    "Project root being started by `lsp--start-connection' for jdtls.")
+
+  (defadvice! my/lsp-java--capture-starting-root-a (orig-fn session client project-root)
+    :around #'lsp--start-connection
+    (dlet ((my/lsp-java--starting-root
+            (if (eq (lsp--client-server-id client) 'jdtls)
+                project-root
+              (bound-and-true-p my/lsp-java--starting-root))))
+      (funcall orig-fn session client project-root)))
+
+  (defun my/lsp-java--cur-workspace-jdtls-p ()
+    "Return non-nil when `lsp--cur-workspace' is a jdtls workspace."
+    (and (bound-and-true-p lsp--cur-workspace)
+         (eq (lsp--client-server-id
+              (lsp--workspace-client lsp--cur-workspace))
+             'jdtls)))
+
+  (defun my/lsp-java--attached-workspace ()
+    "Return the jdtls workspace attached to the current buffer, or nil."
+    (or (and (my/lsp-java--cur-workspace-jdtls-p)
+             lsp--cur-workspace)
+        (seq-find (lambda (ws)
+                    (eq (lsp--client-server-id (lsp--workspace-client ws))
+                        'jdtls))
+                  (bound-and-true-p lsp--buffer-workspaces))))
+
+  (defun my/lsp-java--active-workspace (&optional allow-any)
+    "Return the active jdtls workspace for the current buffer, or nil.
+When ALLOW-ANY is non-nil, fall back to any jdtls workspace in the session."
+    (or (my/lsp-java--attached-workspace)
+        (and buffer-file-name
+             (lsp-find-workspace 'jdtls buffer-file-name))
+        (and default-directory
+             (lsp-find-workspace 'jdtls default-directory))
+        (and allow-any (lsp-find-workspace 'jdtls nil))))
+
+  (defun my/lsp-java--current-root ()
+    "Return the current project root for jdtls."
+    (or (bound-and-true-p my/lsp-java--starting-root)
+        (when-let ((ws (my/lsp-java--attached-workspace)))
+          (lsp--workspace-root ws))
+        (if (bound-and-true-p lsp-auto-guess-root)
+            (lsp--suggest-project-root)
+          (or (when-let ((path (or buffer-file-name default-directory)))
+                (or (when-let ((ws (lsp-find-workspace 'jdtls path)))
+                      (lsp--workspace-root ws))
+                    (lsp-workspace-root path)))
+              (lsp--suggest-project-root)))))
+
   (defun my/lsp-java--workspace-dir ()
     "Return the per-project jdtls workspace directory for the current project."
-    (my/lsp-java--workspace-dir-for-root
-     (or (projectile-project-root) default-directory)))
+    (my/lsp-java--workspace-dir-for-root (my/lsp-java--current-root)))
 
   (defun my/lsp-java--remove-stale-lock (ws-dir)
     "Remove a stale .metadata/.lock file in WS-DIR if no jdtls owns it.
@@ -287,40 +336,37 @@ by another Emacs instance cannot be detected (and will be removed)."
   ;; 3. Wrap :initialization-options so the LSP initialize handshake sends only
   ;;    the current project root as workspaceFolders, not the global session list.
 
-  ;; NOTE: mutate slots via `cl-struct-slot-value' rather than the per-slot
-  ;; accessors (e.g. `(setf (lsp--client-multi-root c) ...)').  The accessor
-  ;; `setf' relies on the accessor's cl-defstruct compiler-macro being
-  ;; resolvable at macro-expansion time; during the *cold* load of lsp-java
-  ;; (when this `after!' body first runs via `eval-after-load') that resolution
-  ;; can fail, so `gv' falls back to the non-existent named setter and signals
-  ;;   Symbol's function definition is void: \(setf lsp--client-multi-root\)
-  ;; `cl-struct-slot-value' has a `gv-expander' baked into cl-macs (which is
-  ;; always loaded before any `setf' can expand), so it is resolvable on every
-  ;; macro-expansion and avoids the race entirely.
+  ;; NOTE: mutate slots via `cl-struct-slot-value' with a non-constant type
+  ;; variable rather than per-slot `setf' accessors or a quoted `'lsp--client':
+  ;; per-slot `setf' can fail during cold load before cl-defstruct compiler
+  ;; macros are resolvable, and a literal quoted `'lsp--client' triggers
+  ;; `cl-typep--inliner' at macroexpansion/compile time before `lsp-mode' is
+  ;; loaded (crashing `doom doctor').  A local binding keeps the runtime type
+  ;; check without macroexpansion-time struct lookup.
   ;; A failing slot patch must not silently skip the rest of this body (every
   ;; project server would then share one workspace) — warn and carry on.
   (condition-case err
       (when-let ((jdtls-client (gethash 'jdtls lsp-clients)))
-        ;; (1) Disable multi-root
-        (setf (cl-struct-slot-value 'lsp--client 'multi-root jdtls-client) nil)
+        (let ((client-type 'lsp--client))
+          ;; (1) Disable multi-root
+          (setf (cl-struct-slot-value client-type 'multi-root jdtls-client) nil)
 
-        ;; (2) Per-project library/cache folder
-        (setf (cl-struct-slot-value 'lsp--client 'library-folders-fn jdtls-client)
-              (lambda (workspace)
-                (list (expand-file-name
-                       ".cache/"
-                       (my/lsp-java--workspace-dir-for-root
-                        (lsp--workspace-root workspace))))))
+          ;; (2) Per-project library/cache folder
+          (setf (cl-struct-slot-value client-type 'library-folders-fn jdtls-client)
+                (lambda (workspace)
+                  (list (expand-file-name
+                         ".cache/"
+                         (my/lsp-java--workspace-dir-for-root
+                          (lsp--workspace-root workspace))))))
 
-        ;; (3) Isolated workspaceFolders in initialization-options
-        (let ((orig-init-fn (lsp--client-initialization-options jdtls-client)))
-          (setf (cl-struct-slot-value 'lsp--client 'initialization-options jdtls-client)
-                (lambda ()
-                  (let ((opts (funcall orig-init-fn)))
-                    (plist-put opts :workspaceFolders
-                               (vector (lsp--path-to-uri
-                                        (or (projectile-project-root)
-                                            default-directory)))))))))
+          ;; (3) Isolated workspaceFolders in initialization-options
+          (let ((orig-init-fn (lsp--client-initialization-options jdtls-client)))
+            (setf (cl-struct-slot-value client-type 'initialization-options jdtls-client)
+                  (lambda ()
+                    (let ((opts (funcall orig-init-fn)))
+                      (plist-put opts :workspaceFolders
+                                 (vector (lsp--path-to-uri
+                                          (my/lsp-java--current-root))))))))))
     (error (warn "jdtls client patch failed: %S" err)))
 
   ;; --- Dependency buffer attachment fix -------------------------------------
@@ -391,26 +437,13 @@ by another Emacs instance cannot be detected (and will be removed)."
   ;;      the session, which with multi-root disabled can be another
   ;;      project's server (wrong classpath).
   (defvar my/lsp-java--resolve-uri-times (make-hash-table :test #'equal)
-    "URI -> last `java/classFileContents' fetch time, to avoid re-fetch storms.")
+    "Cache file path -> last `java/classFileContents' fetch time.
+Used to avoid re-fetch storms.")
 
   (defadvice! my/lsp-java--resolve-uri-a (uri)
     "Resolve jdt:// URI into the per-project cache dir, refreshing stale content."
     :override #'lsp-java--resolve-uri
-    (let* ((workspace
-            (or (and (bound-and-true-p lsp--cur-workspace)
-                     (eq (lsp--client-server-id
-                          (lsp--workspace-client lsp--cur-workspace))
-                         'jdtls)
-                     lsp--cur-workspace)
-                (seq-find
-                 (lambda (ws)
-                   (eq (lsp--client-server-id (lsp--workspace-client ws))
-                       'jdtls))
-                 (bound-and-true-p lsp--buffer-workspaces))
-                (and buffer-file-name
-                     (lsp-find-workspace 'jdtls buffer-file-name))
-                (lsp-find-workspace 'jdtls default-directory)
-                (lsp-find-workspace 'jdtls nil)))
+    (let* ((workspace (my/lsp-java--active-workspace t))
            (root (or (and workspace (lsp--workspace-root workspace))
                      (projectile-project-root)
                      default-directory))
@@ -423,7 +456,7 @@ by another Emacs instance cannot be detected (and will be removed)."
            (file-location (expand-file-name
                            (lsp-java--get-filename uri)
                            (expand-file-name (md5 uri) cache-dir)))
-           (last-fetch (gethash uri my/lsp-java--resolve-uri-times))
+           (last-fetch (gethash file-location my/lsp-java--resolve-uri-times))
            (fresh (and last-fetch
                        (file-readable-p file-location)
                        (< (float-time (time-subtract nil last-fetch)) 60))))
@@ -433,6 +466,8 @@ by another Emacs instance cannot be detected (and will be removed)."
                              (lsp-send-request
                               (lsp-make-request
                                "java/classFileContents" (list :uri uri))))))
+              (unless (stringp content)
+                (error "jdtls returned no content for %s" uri))
               (lsp-java--ensure-dir (file-name-directory file-location))
               (unless (and (file-readable-p file-location)
                            (string= content
@@ -446,7 +481,7 @@ by another Emacs instance cannot be detected (and will be removed)."
                 (when-let ((buf (get-file-buffer file-location)))
                   (with-current-buffer buf
                     (revert-buffer :ignore-auto :noconfirm :preserve-modes))))
-              (puthash uri (current-time) my/lsp-java--resolve-uri-times))
+              (puthash file-location (current-time) my/lsp-java--resolve-uri-times))
           (error
            ;; Fall back to the cached copy if the request failed.
            (unless (file-readable-p file-location)
@@ -455,19 +490,16 @@ by another Emacs instance cannot be detected (and will be removed)."
 
   ;; --- File watchers for jdtls only -------------------------------------------
   ;; jdtls registers workspace/didChangeWatchedFiles watchers (*.java, pom.xml,
-  ;; *.gradle, .project...).  With `lsp-enable-file-watchers' nil that
-  ;; registration is silently dropped, so jdtls never hears about external
-  ;; changes (builds, git pull, codegen) and its index goes stale until a full
-  ;; rebuild.  Honor watcher registrations for jdtls; all other servers keep
-  ;; the global nil.
+  ;; *.gradle, .project...).  With `lsp-enable-file-watchers' nil, both the
+  ;; initialize handshake capability and dynamic registrations are dropped, so
+  ;; jdtls never hears about external changes (builds, git pull, codegen) and
+  ;; its index goes stale until a full rebuild.  Advertise and honor watchers
+  ;; for jdtls; all other servers keep the global nil.
   (defadvice! my/lsp--enable-watchers-for-jdtls-a (orig-fn &rest args)
-    :around #'lsp--server-register-capability
+    :around '(lsp--server-register-capability lsp--client-capabilities)
     (let ((lsp-enable-file-watchers
            (or lsp-enable-file-watchers
-               (and lsp--cur-workspace
-                    (eq (lsp--client-server-id
-                         (lsp--workspace-client lsp--cur-workspace))
-                        'jdtls)))))
+               (my/lsp-java--cur-workspace-jdtls-p))))
       (apply orig-fn args)))
 
   ;; --- Command builder advice ------------------------------------------------
@@ -493,7 +525,9 @@ any live jdtls that uses it.  A fresh jdtls starts on the next Java
 file open.  Use this when jdtls fails to start due to a corrupted
 workspace."
     (interactive)
-    (let ((ws-dir (my/lsp-java--workspace-dir)))
+    (let* ((root (or (my/lsp-java--current-root)
+                     (user-error "Cannot determine current project root")))
+           (ws-dir (my/lsp-java--workspace-dir-for-root root)))
       (unless (file-directory-p ws-dir)
         (user-error "No jdtls workspace directory found at %s" ws-dir))
       (when (y-or-n-p (format "Delete jdtls workspace %s?" ws-dir))
@@ -532,9 +566,6 @@ workspace."
   (setq-local c-basic-offset 4
               tab-width 4
               indent-tabs-mode nil))
-
-(after! dap-mode
-  (setq dap-java--var-format "\"$%s\""))
 
 ;; Avro
 (add-to-list 'auto-mode-alist '("\\.avsc\\'" . json-mode))
@@ -585,22 +616,42 @@ workspace."
   ;; tokens don't support the /compare/ endpoint on GHE 3.19.  The
   ;; token must be sent to ghe.spotify.net ONLY; every other forge
   ;; uses normal ghub auth-source credentials.
-  (defvar my/pr-review-ghe-token
-    (let ((token (with-temp-buffer
-                   ;; call-process signals file-error when gh itself is
-                   ;; missing, and returns a signal-description STRING
-                   ;; (not a number) when the child dies by a signal — so
-                   ;; use (eq 0 …), which tolerates both, never signals,
-                   ;; and only accepts a genuine zero exit status.
-                   (when (eq 0 (condition-case nil
-                                   (call-process "gh" nil '(t nil) nil
-                                                 "auth" "token"
-                                                 "--hostname" "ghe.spotify.net")
-                                 (error -1)))
-                     (string-trim (buffer-string))))))
-      (unless (string-empty-p (or token "")) token))
-    "gh CLI token for ghe.spotify.net, or nil when gh is missing, fails,
-or prints no token (GHE then falls back to auth-source too).")
+  (defvar my/pr-review--ghe-token-cache nil
+    "Cons of (TOKEN . FETCH-TIME) for the cached GHE gh CLI token.")
+
+  (defun my/pr-review--ghe-host-p (host)
+    "Return non-nil when HOST is ghe.spotify.net or an API path on it."
+    (and (stringp host)
+         (or (string= host "ghe.spotify.net")
+             (string-prefix-p "ghe.spotify.net/" host))))
+
+  (defun my/pr-review--ghe-token ()
+    "Return gh CLI token for ghe.spotify.net, cached for 300s.
+Returns nil when gh is missing, fails, or prints no token (never cached,
+so GHE falls back to auth-source and retries on the next call)."
+    (let ((now (float-time)))
+      (if (and my/pr-review--ghe-token-cache
+               (< (- now (cdr my/pr-review--ghe-token-cache)) 300))
+          (car my/pr-review--ghe-token-cache)
+        (let ((token (with-temp-buffer
+                       ;; Use a stable cwd so a deleted buffer directory (e.g.
+                       ;; a pruned worktree) does not cause call-process to fail.
+                       (let ((default-directory (expand-file-name "~")))
+                         ;; call-process signals file-error when gh itself is
+                         ;; missing, and returns a signal-description STRING
+                         ;; (not a number) when the child dies by a signal — so
+                         ;; use (eq 0 …), which tolerates both, never signals,
+                         ;; and only accepts a genuine zero exit status.
+                         (when (eq 0 (condition-case nil
+                                         (call-process "gh" nil '(t nil) nil
+                                                       "auth" "token"
+                                                       "--hostname" "ghe.spotify.net")
+                                       (error -1)))
+                           (string-trim (buffer-string)))))))
+          (if (and token (not (string-empty-p token)))
+              (car (setq my/pr-review--ghe-token-cache (cons token now)))
+            (setq my/pr-review--ghe-token-cache nil))))))
+
   (defadvice! my/pr-review--ghub-auth-ghe-only-a (orig-fn)
     "Send the gh CLI token only on ghe.spotify.net requests.
 All other hosts — and GHE itself when the token is unavailable —
@@ -608,10 +659,9 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
     :around #'pr-review--ghub-common-request-args
     (let* ((args (funcall orig-fn))
            (host (plist-get args :host)))
-      (if (and my/pr-review-ghe-token
-               host
-               (string-prefix-p "ghe.spotify.net" host))
-          (plist-put args :auth my/pr-review-ghe-token)
+      (if-let* (((my/pr-review--ghe-host-p host))
+                (token (my/pr-review--ghe-token)))
+          (plist-put args :auth token)
         args))))
 
 ;; SQL
@@ -629,7 +679,6 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
   (setq d2-output-format ".png"))
 
 (after! d2-mode
-  (require 'reformatter)
   (reformatter-define d2-format
     :program "d2"
     :stdin nil
@@ -659,6 +708,7 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
       (let ((deadline (+ (float-time) grip-sleep-time))
             connection)
         (while (and (not connection)
+                    (process-live-p grip--process)
                     (< (float-time) deadline))
           (setq connection
                 (condition-case nil
@@ -762,6 +812,15 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
   ;; no persp.
   (when (modulep! :ui workspaces)
     (add-hook 'agent-shell-mode-hook #'+workspaces-add-current-buffer-h))
+  (defun my/agent-shell--other-workspace-for-buffer (buffer)
+    "Return the workspace owning BUFFER when `persp-mode' is active and BUFFER
+is not in the current workspace, or nil otherwise."
+    (when (and buffer
+               (buffer-live-p buffer)
+               (bound-and-true-p persp-mode)
+               (not (+workspace-contains-buffer-p buffer)))
+      (cl-find-if (lambda (ws) (+workspace-contains-buffer-p buffer ws))
+                  (+workspace-list))))
   ;; Switch to the workspace owning the selected shell before displaying it,
   ;; so `switch-to-buffer' doesn't pull another workspace's shell into this one.
   (defadvice! my/agent-shell-switch-buffer-workspace-a (&rest _)
@@ -774,11 +833,8 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
                                  :shell-buffer shell-buffer
                                  :existing-only t))
                               shell-buffer)))
-      (when (and (bound-and-true-p persp-mode)
-                 (not (+workspace-contains-buffer-p shell-buffer)))
-        (when-let* ((ws (cl-find-if (lambda (w) (+workspace-contains-buffer-p shell-buffer w))
-                                    (+workspace-list))))
-          (+workspace-switch (persp-name ws))))
+      (when-let* ((ws (my/agent-shell--other-workspace-for-buffer shell-buffer)))
+        (+workspace-switch (persp-name ws)))
       (if-let* ((win (get-buffer-window target-buffer)))
           (select-window win)
         (switch-to-buffer target-buffer)))))
@@ -921,13 +977,7 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
     "Switch to the workspace containing the shell buffer before visiting it."
     :around #'agent-shell-manager-goto
     (let ((buffer (tabulated-list-get-id)))
-      (if-let* (((and buffer
-                      (buffer-live-p buffer)
-                      (bound-and-true-p persp-mode)
-                      (not (+workspace-contains-buffer-p buffer))))
-                (workspace
-                 (cl-find-if (lambda (ws) (+workspace-contains-buffer-p buffer ws))
-                             (+workspace-list))))
+      (if-let* ((workspace (my/agent-shell--other-workspace-for-buffer buffer)))
           (progn
             (agent-shell-manager--hide-window)
             (+workspace-switch (persp-name workspace))
@@ -970,13 +1020,16 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
          (tsv-mode . rainbow-csv-mode)))
 
 (defun +link-hint-open-link-choose ()
-  "Select a link with link-hint, then choose to open in webkit or brwser."
+  "Select a link with link-hint, then choose to open in webkit or browser."
   (interactive)
-  (link-hint-copy-link)
-  (let ((url (current-kill 0)))
-    (pcase (read-char-choice (format "[w]ebkit [b]rowser: ") '(?w ?b))
-      (?w (xwidget-webkit-browse-url url))
-      (?b (browse-url url)))))
+  (let (url)
+    (cl-letf (((symbol-function 'kill-new)
+               (lambda (s &optional _) (setq url s) nil)))
+      (link-hint-copy-link))
+    (when url
+      (pcase (read-char-choice "[w]ebkit [b]rowser: " '(?w ?b))
+        (?w (xwidget-webkit-browse-url url))
+        (?b (browse-url url))))))
 
 (map! :leader
       :desc "Open link" "s l" #'+link-hint-open-link-choose)
