@@ -651,11 +651,11 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
   (setq markdown-hide-markup t))
 
 (after! grip-mode
-  (setq grip-command 'mdopen)
+  (setq grip-command 'go-grip)
 
   (defun my/grip-wait-for-server-a (&rest _)
-    "Wait until mdopen is listening before sending xwidget to its URL."
-    (when (eq grip--command 'mdopen)
+    "Wait until the local grip server is listening before sending xwidget to its URL."
+    (when (memq grip--command '(go-grip mdopen))
       (let ((deadline (+ (float-time) grip-sleep-time))
             connection)
         (while (and (not connection)
@@ -670,7 +670,7 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
         (when connection
           (delete-process connection)))))
 
-  ;; `grip-mode' opens xwidget before mdopen is always ready.  The failed
+  ;; `grip-mode' opens xwidget before go-grip/mdopen is always ready.  The failed
   ;; navigation leaves xwidget displaying the preceding Markdown file.
   (advice-remove #'grip--preview-1 #'my/grip-wait-for-server-a)
   (advice-add #'grip--preview-1 :before #'my/grip-wait-for-server-a)
