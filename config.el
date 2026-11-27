@@ -700,10 +700,14 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
   (setq markdown-hide-markup t))
 
 (after! grip-mode
-  (setq grip-command 'go-grip)
+  (setq grip-command 'go-grip
+        grip-preview-in-webkit nil)
+
+  (defvar-local my/grip-preview-buffer nil
+    "Dedicated `wkview' preview buffer for the current grip session.")
 
   (defun my/grip-wait-for-server-a (&rest _)
-    "Wait until the local grip server is listening before sending xwidget to its URL."
+    "Wait until the local grip server is listening before opening its preview URL."
     (when (memq grip--command '(go-grip mdopen))
       (let ((deadline (+ (float-time) grip-sleep-time))
             connection)
@@ -720,18 +724,28 @@ keep ghub's normal auth-source lookup via `pr-review-ghub-auth-name'."
         (when connection
           (delete-process connection)))))
 
-  ;; `grip-mode' opens xwidget before go-grip/mdopen is always ready.  The failed
-  ;; navigation leaves xwidget displaying the preceding Markdown file.
+  (defun my/grip-browse-url-a (url)
+    "Open grip preview URL in a dedicated `wkview' buffer."
+    (save-selected-window
+      (setq my/grip-preview-buffer
+            (wkview-browse-url-other-window url (or my/grip-preview-buffer t)))))
+
+  (defun my/grip-kill-preview-a (&rest _)
+    "Kill the `wkview' buffer associated with this grip session."
+    (when (buffer-live-p my/grip-preview-buffer)
+      (let ((kill-buffer-query-functions nil))
+        (kill-buffer my/grip-preview-buffer)))
+    (setq my/grip-preview-buffer nil))
+
+  ;; `grip-mode' opens the preview before go-grip/mdopen is always ready.
   (advice-remove #'grip--preview-1 #'my/grip-wait-for-server-a)
   (advice-add #'grip--preview-1 :before #'my/grip-wait-for-server-a)
 
-  ;; Keep xwidget previews in a stable right-hand side window.
-  (set-popup-rule! "^\\*xwidget-webkit:"
-    :side 'right
-    :size 0.45
-    :select t
-    :quit nil
-    :ttl nil)
+  (advice-remove #'grip--browse-url #'my/grip-browse-url-a)
+  (advice-add #'grip--browse-url :override #'my/grip-browse-url-a)
+
+  (advice-remove #'grip--kill-process #'my/grip-kill-preview-a)
+  (advice-add #'grip--kill-process :before #'my/grip-kill-preview-a)
 
   ;; Browse an existing preview instead of toggling its process off.
   (map! :map markdown-mode-map
@@ -1019,6 +1033,12 @@ is not in the current workspace, or nil otherwise."
   :hook ((csv-mode . rainbow-csv-mode)
          (tsv-mode . rainbow-csv-mode)))
 
+(add-hook 'wkview-mode-hook #'+workspaces-add-current-buffer-h)
+
+(setq browse-url-browser-function #'wkview-browse-url-other-window
+      browse-url-secondary-browser-function #'wkview-browse-url-external
+      browse-url-new-window-flag t)
+
 (defun +link-hint-open-link-choose ()
   "Select a link with link-hint, then choose to open in webkit or browser."
   (interactive)
@@ -1028,8 +1048,8 @@ is not in the current workspace, or nil otherwise."
       (link-hint-copy-link))
     (when url
       (pcase (read-char-choice "[w]ebkit [b]rowser: " '(?w ?b))
-        (?w (xwidget-webkit-browse-url url))
-        (?b (browse-url url))))))
+        (?w (wkview-browse-url-other-window url t))
+        (?b (wkview-browse-url-external url))))))
 
 (map! :leader
       :desc "Open link" "s l" #'+link-hint-open-link-choose)

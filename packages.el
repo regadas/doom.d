@@ -48,6 +48,10 @@
   :recipe (:host github
            :repo "nineluj/agent-review"
            :files ("*.el")))
+(package! wkview
+  :recipe (:host github
+           :repo "regadas/wkview.el"
+           :files (:defaults "Makefile" "*.m")))
 
 (unpin! magit)
 (unpin! transient)
