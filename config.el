@@ -853,6 +853,11 @@ is not in the current workspace, or nil otherwise."
           (select-window win)
         (switch-to-buffer target-buffer)))))
 
+(use-package! agent-shell-mermaid
+  :after agent-shell
+  :hook ((agent-shell-mode . agent-shell-mermaid-mode)
+         (doom-load-theme . agent-shell-mermaid-on-theme-change)))
+
 (use-package! agent-shell-macext
   :after agent-shell
   :hook (agent-shell-mode . agent-shell-macext-setup)

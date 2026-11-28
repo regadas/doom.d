@@ -44,6 +44,10 @@
   :recipe (:host github
            :repo "jethrokuan/agent-shell-manager"
            :files ("*.el")))
+(package! agent-shell-mermaid
+  :recipe (:host github
+           :repo "regadas/agent-shell-mermaid.el"
+           :files ("agent-shell-mermaid.el")))
 (package! agent-review
   :recipe (:host github
            :repo "nineluj/agent-review"
