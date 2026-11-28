@@ -856,7 +856,26 @@ is not in the current workspace, or nil otherwise."
 (use-package! agent-shell-mermaid
   :after agent-shell
   :hook ((agent-shell-mode . agent-shell-mermaid-mode)
-         (doom-load-theme . agent-shell-mermaid-on-theme-change)))
+         (doom-load-theme . agent-shell-mermaid-on-theme-change))
+  :config
+  (setq agent-shell-mermaid-theme
+        '((:surface     . "#edf2ff")
+          (:surface-alt . "#e0e7ff")
+          (:border      . "#5b7bd5")
+          (:line        . "#3548cf")
+          (:accent      . "#3548cf"))
+        agent-shell-mermaid-svg-css
+        (mapconcat
+         #'identity
+         '(".pele-shape-stadium rect, .pele-shape-stadium path { fill: #dbeafe; stroke: #2563eb; }"
+           ".pele-shape-stadium text { fill: #1e3a8a; }"
+           ".pele-shape-diam polygon, .pele-shape-diam path { fill: #fef3c7; stroke: #d97706; }"
+           ".pele-shape-diam text { fill: #78350f; }"
+           ".pele-shape-cyl path, .pele-shape-cyl rect { fill: #e0e7ff; stroke: #4338ca; }"
+           ".pele-shape-cyl text { fill: #312e81; }"
+           ".pele-shape-circle circle { fill: #dcfce7; stroke: #16a34a; }"
+           ".pele-shape-circle text { fill: #14532d; }")
+         "\n")))
 
 (use-package! agent-shell-macext
   :after agent-shell
